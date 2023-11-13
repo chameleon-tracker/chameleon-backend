@@ -1,0 +1,172 @@
+import dataclasses
+import typing
+
+from chameleon.step import core
+from chameleon.step.core.doc import create_field
+
+
+__all__ = [
+    "ProcessorSteps",
+    "UrlHandler",
+    "StepHandlerProtocol",
+]
+
+
+class StepHandlerProtocol(typing.Protocol):
+    async def __call__(
+        self,
+        context: core.StepContext,
+    ) -> bool | None:
+        ...
+
+
+@dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
+class ProcessorSteps:
+    # framework-specific
+    fill_request_info: StepHandlerProtocol | None = create_field(
+        doc="""Extracts basic request info to minimize dependency from framework."""
+    )
+
+    # framework-specific
+    check_authenticated: StepHandlerProtocol | None = create_field(
+        doc="""Check if a user authenticated e.g. auth token is valid."""
+    )
+
+    # framework-specific
+    check_headers: StepHandlerProtocol | None = create_field(
+        doc="""Check request headers are expected."""
+    )
+
+    check_access_pre_read: StepHandlerProtocol | None = create_field(
+        doc="""Check a requester has an access to that resource"
+         "(body hasn't been read)."""
+    )
+
+    # framework-specific
+    extract_body: StepHandlerProtocol | None = create_field(
+        doc="""Extract body from the request layer."""
+    )
+
+    decrypt: StepHandlerProtocol | None = create_field(
+        doc="""Optional decryption and/or signature check of the request_body."""
+    )
+
+    # could be generated from default impl
+    deserialize: StepHandlerProtocol | None = create_field(
+        doc="""Deserialize request body to the input_raw."""
+    )
+
+    # could be generated from default impl
+    validate_input: StepHandlerProtocol | None = create_field(
+        doc="""Validate input_raw and/or request body."""
+    )
+
+    check_access_post_read: StepHandlerProtocol | None = create_field(
+        doc="""Check a requester has an access to that resource (body has been read)."""
+    )
+
+    # could be generated from default impl
+    map_input: StepHandlerProtocol | None = create_field(
+        doc="""Map input_raw to the internal representation to be processed."""
+    )
+
+    business: StepHandlerProtocol | None = create_field(
+        doc="""Endpoint business part. Could be database handling and/or"""
+        """sending another request somewhere else"""
+    )
+    # could be generated from default impl
+    map_output: StepHandlerProtocol | None = create_field(
+        doc="""Map output_orm to the raw representation to be serialized."""
+    )
+
+    exception_handler: StepHandlerProtocol | None = create_field()
+
+    serialize: StepHandlerProtocol | None = create_field(
+        doc="""Serialize output_raw to be passed for transport layers."""
+    )
+    encrypt: StepHandlerProtocol | None = create_field(
+        doc="""Optional encryption, signing, etc."""
+    )
+
+    response_headers: StepHandlerProtocol | None = create_field(
+        doc="""Prepare additional response headers."""
+    )
+
+    # framework-specific
+    create_response: StepHandlerProtocol | None = create_field(
+        doc="""Create HTTP response to be returned."""
+    )
+
+    def process_order(self):
+        """Intended execution order."""
+        return (
+            ("fill_request_info", self.fill_request_info),
+            ("check_authenticated", self.check_authenticated),
+            ("check_headers", self.check_headers),
+            ("check_access_pre", self.check_access_pre_read),
+            ("extract_body", self.extract_body),
+            ("decrypt", self.decrypt),
+            ("deserialize", self.deserialize),
+            ("validate_input", self.validate_input),
+            ("check_access_post", self.check_access_post_read),
+            ("map_input", self.map_input),
+            ("business", self.business),
+            ("map_output", self.map_output),
+        )
+
+    def response_order(self):
+        """Intended response preparation order."""
+        return (
+            self.serialize,
+            self.encrypt,
+            self.response_headers,
+            self.create_response,
+        )
+
+
+async def await_nullable(context: core.StepContext, step_handler: StepHandlerProtocol):
+    if step_handler is not None:
+        return await step_handler(context)
+    return False
+
+
+class UrlHandler:
+    steps: ProcessorSteps
+
+    def __init__(
+        self,
+        *,
+        steps: ProcessorSteps,
+        error_status_to_http: typing.Mapping[int, int] = None,
+    ):
+        self.steps = steps
+        self.error_status_to_http = error_status_to_http
+
+    async def process(self, request, **url_params):
+        steps = self.steps
+
+        context: core.StepContext = core.StepContext(
+            request_info=core.StepContextRequestInfo(request=request),
+            custom_info=dict(url_params),
+            error_status_to_http=self.error_status_to_http,
+        )
+
+        try:
+            functions = filter(lambda step: step[1] is not None, steps.process_order())
+            for current_step, step_handler in functions:
+                context.current_step = current_step
+                await step_handler(context)
+
+        except Exception as e:
+            context.exception = e
+            if steps.exception_handler is None:
+                raise
+            if not await steps.exception_handler(context):
+                raise  # re-raise the exception if not handled
+
+        for step_handler in filter(
+            lambda step: step is not None, steps.response_order()
+        ):
+            await step_handler(context)
+
+        return context.response
