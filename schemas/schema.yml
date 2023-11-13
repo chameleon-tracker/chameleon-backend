@@ -1,0 +1,62 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$defs:
+  GenericTextMarkup:
+    type: string
+    description: Markup types definition.
+    enum:
+      - PLAIN
+      - MARKDOWN
+      - ASCIIDOC
+
+  GenericPublicId:
+    type: string
+    description: |-
+      All public IDs will be formatted this way to ensure
+      a user can't enumerate objects.
+    pattern: '[a-zA-Z0-9_-]+'
+
+  ChameleonProjectCommon:
+    type: object
+    description: |-
+      Common field definition for ChameleonProject type between operations
+    properties:
+      title:
+        type: string
+        description: Project title
+        minLength: 1
+        maxLength: 200
+      description:
+        type: string
+        description: Project description
+      description_markup:
+        description: Project description markup language
+        $ref: "#/$defs/GenericTextMarkup"
+
+  ChameleonProjectCreate:
+    type: object
+    description: |-
+      Project definition to create a ChameleonProject.
+    allOf:
+      - $ref: "#/$defs/ChameleonProjectCommon"
+    required:
+      - title
+
+  ChameleonProject:
+    type: object
+    description: |-
+      ChameleonProject with all public fields.
+    properties:
+      id:
+        $ref: "#/$defs/GenericPublicId"
+    allOf:
+      - $ref: "#/$defs/ChameleonProjectCommon"
+    required:
+      - id
+      - title
+
+  ChameleonProjectUpdate:
+    type: object
+    description: |-
+      Field definition to update given ChameleonProject
+    allOf:
+      - $ref: "#/$defs/ChameleonProjectCommon"

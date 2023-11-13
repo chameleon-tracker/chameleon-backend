@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: Project Object API
+  version: 0.0.1
+paths:
+  /project:
+    get:
+      description: List available projects
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'schema.yml#/$defs/ChameleonProject'
+    post:
+      description: Create new project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'schema.yml#/$defs/ChameleonProjectCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schema.yml#/$defs/ChameleonProject'
+  /project/{projectId}:
+    get:
+      description: Retrieve given project
+      parameters:
+        - name: projectId
+          in: path
+          description: ID of project to return
+          required: true
+          schema:
+            $ref: "schema.yml#/$defs/GenericPublicId"
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schema.yml#/$defs/ChameleonProject'
+        '400':
+          description: Invalid input
+        '404':
+          description: Object not found
+    post:
+      description: ''
+      parameters:
+        - name: projectId
+          in: path
+          description: ID of project that needs to be updated
+          required: true
+          schema:
+            $ref: "schema.yml#/$defs/GenericPublicId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'schema.yml#/$defs/ChameleonProjectUpdate'
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '404':
+          description: Project not found
