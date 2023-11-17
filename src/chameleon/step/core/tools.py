@@ -12,12 +12,12 @@ async def noop_step(_context: core.StepContext):
 
 
 def ensure_steps_object(
-    value: core.ProcessorSteps | typing.Mapping[str, core.StepHandlerProtocol]
+    value: core.UrlHandlerSteps | typing.Mapping[str, core.StepHandlerProtocol]
 ):
-    if isinstance(value, core.ProcessorSteps):
+    if isinstance(value, core.UrlHandlerSteps):
         return value
     elif isinstance(value, typing.Mapping):
-        return core.ProcessorSteps(**value)
+        return core.UrlHandlerSteps(**value)
     else:
         raise TypeError("Value must be ProcessorHooks or a mapping")
 

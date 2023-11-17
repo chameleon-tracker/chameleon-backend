@@ -7,5 +7,3 @@ from .core import StepHandlerProtocol
 
 from .tools import method_dispatcher
 from .tools import noop_step
-
-ProcessorSteps = UrlHandlerSteps
