@@ -1,4 +1,6 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "urn:chameleon:schema:project:0.0.1"
+
 $defs:
   GenericTextMarkup:
     type: string
@@ -40,6 +42,7 @@ $defs:
       - $ref: "#/$defs/ChameleonProjectCommon"
     required:
       - title
+    unevaluatedProperties: false
 
   ChameleonProject:
     type: object
@@ -53,6 +56,7 @@ $defs:
     required:
       - id
       - title
+    unevaluatedProperties: false
 
   ChameleonProjectUpdate:
     type: object
@@ -60,3 +64,4 @@ $defs:
       Field definition to update given ChameleonProject
     allOf:
       - $ref: "#/$defs/ChameleonProjectCommon"
+    unevaluatedProperties: false
