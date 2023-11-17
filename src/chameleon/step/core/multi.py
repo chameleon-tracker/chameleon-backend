@@ -70,7 +70,7 @@ def multi_processor_steps(
     **kwargs: core.StepHandlerProtocol
     | typing.Mapping[str, core.StepHandlerProtocol]
     | typing.Sequence[core.StepHandlerProtocol]
-) -> core.ProcessorSteps:
+) -> core.UrlHandlerSteps:
     defaults = {}
 
     # Extract all default handlers from kwargs to defaults dict
@@ -94,4 +94,4 @@ def multi_processor_steps(
         if value is None:
             del result[key]
 
-    return core.ProcessorSteps(**result)
+    return core.UrlHandlerSteps(**result)
