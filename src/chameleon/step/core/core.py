@@ -6,7 +6,7 @@ from chameleon.step.core.doc import create_field
 
 
 __all__ = [
-    "ProcessorSteps",
+    "UrlHandlerSteps",
     "UrlHandler",
     "StepHandlerProtocol",
 ]
@@ -21,7 +21,7 @@ class StepHandlerProtocol(typing.Protocol):
 
 
 @dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
-class ProcessorSteps:
+class UrlHandlerSteps:
     # framework-specific
     fill_request_info: StepHandlerProtocol | None = create_field(
         doc="""Extracts basic request info to minimize dependency from framework."""
@@ -76,7 +76,7 @@ class ProcessorSteps:
     )
     # could be generated from default impl
     map_output: StepHandlerProtocol | None = create_field(
-        doc="""Map output_orm to the raw representation to be serialized."""
+        doc="""Map output_business to the raw representation to be serialized."""
     )
 
     exception_handler: StepHandlerProtocol | None = create_field()
@@ -103,12 +103,12 @@ class ProcessorSteps:
             ("fill_request_info", self.fill_request_info),
             ("check_authenticated", self.check_authenticated),
             ("check_headers", self.check_headers),
-            ("check_access_pre", self.check_access_pre_read),
+            ("check_access_pre_read", self.check_access_pre_read),
             ("extract_body", self.extract_body),
             ("decrypt", self.decrypt),
             ("deserialize", self.deserialize),
             ("validate_input", self.validate_input),
-            ("check_access_post", self.check_access_post_read),
+            ("check_access_post_read", self.check_access_post_read),
             ("map_input", self.map_input),
             ("business", self.business),
             ("map_output", self.map_output),
@@ -117,10 +117,10 @@ class ProcessorSteps:
     def response_order(self):
         """Intended response preparation order."""
         return (
-            self.serialize,
-            self.encrypt,
-            self.response_headers,
-            self.create_response,
+            ("serialize", self.serialize),
+            ("encrypt", self.encrypt),
+            ("response_headers", self.response_headers),
+            ("create_response", self.create_response),
         )
 
 
@@ -130,13 +130,19 @@ async def await_nullable(context: core.StepContext, step_handler: StepHandlerPro
     return False
 
 
+def defined_steps(
+    steps: typing.Sequence[tuple[str, StepHandlerProtocol | None]]
+) -> typing.Sequence[tuple[str, StepHandlerProtocol]]:
+    return filter(lambda step: step[1] is not None, steps)
+
+
 class UrlHandler:
-    steps: ProcessorSteps
+    steps: UrlHandlerSteps
 
     def __init__(
         self,
         *,
-        steps: ProcessorSteps,
+        steps: UrlHandlerSteps,
         error_status_to_http: typing.Mapping[int, int] = None,
     ):
         self.steps = steps
@@ -152,11 +158,9 @@ class UrlHandler:
         )
 
         try:
-            functions = filter(lambda step: step[1] is not None, steps.process_order())
-            for current_step, step_handler in functions:
+            for current_step, step_handler in defined_steps(steps.process_order()):
                 context.current_step = current_step
                 await step_handler(context)
-
         except Exception as e:
             context.exception = e
             if steps.exception_handler is None:
@@ -164,9 +168,8 @@ class UrlHandler:
             if not await steps.exception_handler(context):
                 raise  # re-raise the exception if not handled
 
-        for step_handler in filter(
-            lambda step: step is not None, steps.response_order()
-        ):
+        for current_step, step_handler in defined_steps(steps.response_order()):
+            context.current_step = current_step
             await step_handler(context)
 
         return context.response
