@@ -20,7 +20,11 @@ class ProcessorRegistry:
         self.name = name
 
     def register(
-        self, *, type_id: str, action_id: str = None, processor: ProcessorProtocol
+        self,
+        *,
+        type_id: str,
+        action_id: str | None = None,
+        processor: ProcessorProtocol,
     ):
         """Register a validator.
 
@@ -34,11 +38,6 @@ class ProcessorRegistry:
 
         processor_id = _processor_id(type_id, action_id)
 
-        logger.warning(
-            f"==> {self.name.capitalize()} registry, trying to register {processor_id}",
-            exc_info=ValueError(),
-        )
-
         if processor_id in self.registry:
             raise ValueError(
                 f"{self.name.capitalize()} registry already contains {processor_id!r}"
@@ -49,12 +48,12 @@ class ProcessorRegistry:
     def __getitem__(self, item):
         return self.registry[item]
 
-    def get(self, type_id: str, action_id: str = None):
+    def get(self, type_id: str, action_id: str | None = None):
         processor_id = _processor_id(type_id, action_id)
         return self.registry.get(processor_id)
 
 
-def _processor_id(type_id: str, action_id: str = None):
+def _processor_id(type_id: str, action_id: str | None = None):
     if not isinstance(type_id, str) or not type_id:
         raise TypeError(f"type_id must be non-empty str, got {type_id!r}")
     if action_id and not isinstance(action_id, str):

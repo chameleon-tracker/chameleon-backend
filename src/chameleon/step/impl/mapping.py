@@ -6,7 +6,7 @@ import typing
 from chameleon.step import core
 from chameleon.step.impl import registry
 
-__all__ = ("generic_mapping",)
+__all__ = ("default_mapping",)
 
 
 def mapper_get_input(context: core.StepContext, is_input: bool):
@@ -31,7 +31,7 @@ class MappingContext:
 
     type_id: str
     action_id: str | None
-    is_input: bool | None
+    is_input: bool
     expect_list: bool | None
 
 
@@ -47,12 +47,7 @@ async def mapper_handler_runtime(
         return
 
     if mapping_context.expect_list:
-        output_value = list(
-            map(
-                lambda value: mapper_function(value),
-                input_value,
-            )
-        )
+        output_value = list(map(mapper_function, input_value))
     else:
         output_value = mapper_function(input_value)
 
@@ -83,8 +78,15 @@ async def mapper_handler_list_output(
     context.output_raw = list(map(mapping_function, context.output_business))
 
 
+class MapperHandlerProtocol(typing.Protocol):
+    async def __call__(
+        self, context: core.StepContext, *, mapping_function: registry.ProcessorProtocol
+    ):
+        ...
+
+
 # (is_input, expect_list) -> handler
-mapping_functions: typing.Mapping[tuple[bool, bool], core.StepHandlerProtocol] = {
+mapping_functions: dict[tuple[bool, bool], MapperHandlerProtocol] = {
     (False, False): mapper_handler_single_output,
     (True, False): mapper_handler_single_input,
     (False, True): mapper_handler_list_output,
@@ -94,10 +96,10 @@ mapping_functions: typing.Mapping[tuple[bool, bool], core.StepHandlerProtocol] =
 
 def generic_mapper_handler(
     *,
-    type_id,
-    action_id=None,
+    type_id: str,
+    action_id: str | None = None,
     is_input: bool,
-    expect_list,
+    expect_list: bool,
     check_runtime: bool = False,
     **_kwargs,
 ) -> core.StepHandlerProtocol | None:
@@ -126,36 +128,31 @@ def generic_mapper_handler(
     return functools.partial(mapping_step_handler, mapping_function=mapping_function)
 
 
-def generic_mapping(
+def default_mapping(
     *,
     type_id: str | None = None,
     action_id_input: str | None = "input",
     action_id_output: str | None = "output",
     mapping_input_expect_list: bool = False,
     mapping_output_expect_list: bool = False,
-    has_map_input=False,
-    has_map_output=False,
     mapping_check_runtime: bool = False,
-):
+) -> core.StepsDefinitionDict:
     if type_id is None:
         return {}
 
-    result = {}
-    if not has_map_input:
-        result["map_input_default"] = generic_mapper_handler(
+    return {
+        "map_input_default": generic_mapper_handler(
             type_id=type_id,
             action_id=action_id_input,
             expect_list=mapping_input_expect_list,
             is_input=True,
             check_runtime=mapping_check_runtime,
-        )
-    if not has_map_output:
-        result["map_output_default"] = generic_mapper_handler(
+        ),
+        "map_output_default": generic_mapper_handler(
             type_id=type_id,
             action_id=action_id_output,
             expect_list=mapping_output_expect_list,
             is_input=False,
             check_runtime=mapping_check_runtime,
-        )
-
-    return result
+        ),
+    }

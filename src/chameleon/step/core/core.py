@@ -1,7 +1,7 @@
 import dataclasses
 import typing
 
-from chameleon.step import core
+from chameleon.step.core import context as ctx
 from chameleon.step.core.doc import create_field
 
 
@@ -12,10 +12,11 @@ __all__ = [
 ]
 
 
+@typing.runtime_checkable
 class StepHandlerProtocol(typing.Protocol):
     async def __call__(
         self,
-        context: core.StepContext,
+        context: ctx.StepContext,
     ) -> bool | None:
         ...
 
@@ -124,35 +125,30 @@ class UrlHandlerSteps:
         )
 
 
-async def await_nullable(context: core.StepContext, step_handler: StepHandlerProtocol):
-    if step_handler is not None:
-        return await step_handler(context)
-    return False
-
-
 def defined_steps(
     steps: typing.Sequence[tuple[str, StepHandlerProtocol | None]]
-) -> typing.Sequence[tuple[str, StepHandlerProtocol]]:
+) -> typing.Iterable[tuple[str, StepHandlerProtocol]]:
     return filter(lambda step: step[1] is not None, steps)
 
 
 class UrlHandler:
     steps: UrlHandlerSteps
+    error_status_to_http: typing.Mapping[int, int] | None
 
     def __init__(
         self,
         *,
         steps: UrlHandlerSteps,
-        error_status_to_http: typing.Mapping[int, int] = None,
+        error_status_to_http: typing.Mapping[int, int] | None = None,
     ):
         self.steps = steps
         self.error_status_to_http = error_status_to_http
 
-    async def process(self, request, **url_params):
+    async def __call__(self, request, **url_params):
         steps = self.steps
 
-        context: core.StepContext = core.StepContext(
-            request_info=core.StepContextRequestInfo(request=request),
+        context: ctx.StepContext = ctx.StepContext(
+            request_info=ctx.StepContextRequestInfo(request=request),
             custom_info=dict(url_params),
             error_status_to_http=self.error_status_to_http,
         )
@@ -161,7 +157,7 @@ class UrlHandler:
             for current_step, step_handler in defined_steps(steps.process_order()):
                 context.current_step = current_step
                 await step_handler(context)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             context.exception = e
             if steps.exception_handler is None:
                 raise

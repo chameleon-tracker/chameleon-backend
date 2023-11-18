@@ -13,19 +13,20 @@ __all__ = (
     "get_field_depth",
 )
 
-getattr_protocol = typing.Callable[[typing.Any, str], typing.Any]
+GetattrProtocol = typing.Callable[[typing.Any, str], typing.Any]
+
 mapper_registry = ProcessorRegistry("mapper")
 
 
 def register_simple_mapping(
     *,
     type_id: str,
-    action_id: str = None,
+    action_id: str | None = None,
     target_object_type: typing.Any,
-    get_field_fun: getattr_protocol,
+    get_field_fun: GetattrProtocol,
     include_none=False,
-    fields: typing.Sequence[str] = None,
-    custom_mapping: typing.Mapping[str, str] = None
+    fields: typing.Sequence[str] | None = None,
+    custom_mapping: typing.Mapping[str, str] | None = None
 ):
     """Register simple mapping function.
 
@@ -61,11 +62,11 @@ def register_simple_mapping(
 def register_simple_mapping_dict(
     *,
     type_id: str,
-    action_id: str = None,
+    action_id: str | None = None,
     target_object_type,
     include_none=False,
-    fields: typing.Sequence[str] = None,
-    custom_mapping: typing.Mapping[str, str] = None
+    fields: typing.Sequence[str] | None = None,
+    custom_mapping: typing.Mapping[str, str] | None = None
 ):
     register_simple_mapping(
         type_id=type_id,
@@ -81,11 +82,11 @@ def register_simple_mapping_dict(
 def register_simple_mapping_object(
     *,
     type_id: str,
-    action_id: str = None,
+    action_id: str | None = None,
     target_object_type,
     include_none=False,
-    fields: typing.Sequence[str] = None,
-    custom_mapping: typing.Mapping[str, str] = None
+    fields: typing.Sequence[str] | None = None,
+    custom_mapping: typing.Mapping[str, str] | None = None
 ):
     register_simple_mapping(
         type_id=type_id,
@@ -106,7 +107,7 @@ def get_field_dict(source, field: str):
     return source.get(field)
 
 
-def get_field_depth(get_field_fun) -> getattr_protocol:
+def get_field_depth(get_field_fun) -> GetattrProtocol:
     def get_field_depth_fun(source, complex_field):
         fields = complex_field.split(".")
         # check if there's a fields to traverse

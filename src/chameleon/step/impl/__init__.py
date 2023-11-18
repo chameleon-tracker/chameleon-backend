@@ -1,8 +1,9 @@
-from .validation import generic_validation
-from .mapping import generic_mapping
+from .validation import default_validation
+from .mapping import default_mapping
 
 from .jjson import check_content_type_json
 from .jjson import deserialize_json
 from .jjson import serialize_json
 
 from .impl import default_json_steps
+from .impl import DefaultJsonSteps

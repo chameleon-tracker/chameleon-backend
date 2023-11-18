@@ -43,7 +43,7 @@ async def test_processing_order():
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", processing_step_order)
 async def test_faulty_processing_handler(faulty_step: str):
-    step_order = []
+    step_order: list[str] = []
     expected_steps = (
         tuple(itertools.takewhile(lambda x: x != faulty_step, processing_step_order))
         + (faulty_step, f"exception: {faulty_step}")
@@ -56,7 +56,7 @@ async def test_faulty_processing_handler(faulty_step: str):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", response_step_order)
 async def test_faulty_response_handler(faulty_step: str):
-    step_order = []
+    step_order: list[str] = []
     expected_steps = (
         processing_step_order
         + tuple(itertools.takewhile(lambda x: x != faulty_step, response_step_order))
@@ -75,7 +75,7 @@ async def test_faulty_response_handler(faulty_step: str):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", processing_step_order + response_step_order)
 async def test_faulty_step_handler_unhandled(faulty_step: str):
-    step_order = []
+    step_order: list[str] = []
 
     total_step_order = processing_step_order + response_step_order
     expected_steps = tuple(
@@ -94,7 +94,7 @@ async def test_faulty_step_handler_unhandled(faulty_step: str):
 
 def step_handler_generator(
     *,
-    expected_step: str,
+    expected_step: str | None,
     step_order_collect: list[str],
     request_obj: typing.Any,
     error_code_mapping: typing.Mapping[int, int],
@@ -103,6 +103,8 @@ def step_handler_generator(
     exception: bool,
     exception_handled: bool = True,
 ):
+    assert expected_step is not None
+
     async def step_handler(context: core.StepContext):
         assert context is not None
         assert context.current_step == expected_step
@@ -118,12 +120,12 @@ def step_handler_generator(
             step_order_collect.append(f"exception: {context.current_step}")
 
             return exception_handled
-        else:
-            # Append for further order check
-            step_order_collect.append(context.current_step)
 
-            if faulty:
-                raise TestException(expected_step)
+        # Append for further order check
+        step_order_collect.append(context.current_step)
+
+        if faulty:
+            raise TestException(expected_step)
 
     return step_handler
 
@@ -170,7 +172,7 @@ async def generate_and_run_steps(
         steps=handler_steps, error_status_to_http=error_code_mapping
     )
 
-    await url_handler.process(request=request, **custom_info)
+    await url_handler(request=request, **custom_info)
 
 
 def random_int():

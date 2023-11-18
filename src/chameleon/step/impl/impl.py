@@ -2,17 +2,28 @@ import json
 import logging
 import typing
 
-from chameleon.step.impl import generic_mapping
-from chameleon.step.impl import generic_validation
+from chameleon.step import core
+from chameleon.step.impl import default_mapping
+from chameleon.step.impl import default_validation
 from chameleon.step.impl import deserialize_json
 from chameleon.step.impl import serialize_json
 
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("default_json_steps",)
+__all__ = ("default_json_steps", "DefaultJsonSteps")
 
 JsonParserProtocol = typing.Callable[[bytes], typing.Any]
+
+
+class DefaultJsonSteps(typing.TypedDict, total=False):
+    json_loads: JsonParserProtocol
+    json_dumps: JsonParserProtocol
+    type_id: str
+    action_id_input: str
+    action_id_output: str
+    mapping_input_expect_list: bool
+    mapping_output_expect_list: bool
 
 
 def default_json_steps(
@@ -25,8 +36,8 @@ def default_json_steps(
     mapping_input_expect_list: bool = False,
     mapping_output_expect_list: bool = False,
     mapping_check_runtime: bool = False,
-    **kwargs,
-):
+    **kwargs: typing.Unpack[core.StepsDefinitionDict],
+) -> core.StepsDefinitionDict:
     """
     Sets default steps for JSON processing.
     This does framework-independent parts
@@ -50,12 +61,12 @@ def default_json_steps(
     Returns:
 
     """
-    json_data = dict(
-        deserialize_default=deserialize_json(loads=json_loads),
-        serialize_default=serialize_json(dumps=json_dumps),
-    )
+    json_data: core.StepsDefinitionDict = {
+        "deserialize_default": deserialize_json(loads=json_loads),
+        "serialize_default": serialize_json(dumps=json_dumps),
+    }
 
-    mapping = generic_mapping(
+    mapping = default_mapping(
         type_id=type_id,
         action_id_input=action_id_input,
         action_id_output=action_id_output,
@@ -64,9 +75,14 @@ def default_json_steps(
         mapping_check_runtime=mapping_check_runtime,
     )
 
-    validation = generic_validation(
+    validation = default_validation(
         type_id=type_id,
         action_id_input=action_id_input,
     )
 
-    return {**json_data, **mapping, **validation, **kwargs}
+    result: core.StepsDefinitionDict = {}
+    result.update(json_data)
+    result.update(mapping)
+    result.update(validation)
+    result.update(kwargs)
+    return result

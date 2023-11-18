@@ -45,6 +45,8 @@ async def project_create_fun(context: core.StepContext):
 
 
 async def project_list_fun(context: core.StepContext):
+    # noinspection PyUnresolvedReferences
+    # pylint: disable=E1101
     context.output_business = [
         project async for project in ChameleonProject.objects.all()
     ]
@@ -52,26 +54,30 @@ async def project_list_fun(context: core.StepContext):
 
 async def project_get_fun(context: core.StepContext):
     project_id = context.custom_info["project_id"]
+    # noinspection PyUnresolvedReferences
+    # pylint: disable=E1101
     context.output_business = await ChameleonProject.objects.aget(pk=project_id)
 
 
 async def project_update_fun(context: core.StepContext):
     project_id = context.custom_info["project_id"]
     project_data = context.input_business
+    # noinspection PyUnresolvedReferences
+    # pylint: disable=E1101
     project = await ChameleonProject.objects.aget(pk=project_id)
     print(f"==>> {project=!r}")
     await project.update(commit=True, **project_data)
     context.output_business = project
 
 
-processor_create = django.django_default_json_hooks(
+processor_create = django.django_json_steps(
     type_id="project",
     action_id_input="create",
     action_id_output="get",
     business=project_create_fun,
 )
 
-processor_list = django.django_default_json_hooks(
+processor_list = django.django_json_steps(
     type_id="project",
     map_input=None,
     action_id_output="get",
@@ -80,14 +86,14 @@ processor_list = django.django_default_json_hooks(
 )
 
 # path variables: `project_id` - project public ID
-processor_get = django.django_default_json_hooks(
+processor_get = django.django_json_steps(
     business=project_get_fun,
     type_id="project",
     map_input=None,
     action_id_output="get",
 )
 
-processor_update = django.django_default_json_hooks(
+processor_update = django.django_json_steps(
     type_id="project",
     action_id_input="update",
     action_id_output="get",

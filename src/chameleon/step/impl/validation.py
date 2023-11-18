@@ -1,8 +1,10 @@
+import typing
+
 from chameleon.step.impl.registry import validator_registry
 from chameleon.step import core
 
 
-__all__ = ("generic_validation",)
+__all__ = ("default_validation",)
 
 
 def generic_validation_handler(
@@ -17,12 +19,12 @@ def generic_validation_handler(
     return validation_handler
 
 
-def generic_validation(
+def default_validation(
     *,
     type_id: str | None = None,
     action_id_input: str | None = "input",
     has_validation_input: bool = False,
-):
+) -> core.StepsDefinitionDict:
     if type_id is None or has_validation_input:
         return {}
 

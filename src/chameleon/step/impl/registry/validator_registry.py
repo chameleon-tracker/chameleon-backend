@@ -1,7 +1,8 @@
 import dataclasses
 import typing
 
-import jsonschema.protocols
+import jsonschema
+import jsonschema.protocols as json_protocols
 import yaml
 import referencing
 from referencing.jsonschema import SchemaRegistry
@@ -12,17 +13,17 @@ from chameleon.step.impl.registry import ProcessorRegistry
 __all__ = ("SchemaDefinition", "create_all_validators", "validator_registry")
 
 validator_registry = ProcessorRegistry("validator")
-global_validators = {}
+global_validators: typing.MutableMapping[str, json_protocols.Validator] = {}
 
 
 def register_jsonschema_validation(
     *,
-    urn: str,
+    uri: str,
     type_id: str,
     action_id: str | None = None,
 ):
     async def validation_processor(value: typing.Any):
-        global_validators[urn].validate(value)
+        global_validators[uri].validate(value)
 
     validator_registry.register(
         type_id=type_id, action_id=action_id, processor=validation_processor
@@ -30,7 +31,7 @@ def register_jsonschema_validation(
 
 
 def load_schema(filename):
-    with open(filename) as f:
+    with open(filename) as f:  # pylint: disable=W1514
         data = f.read()
     return yaml.safe_load(data)
 
@@ -55,23 +56,13 @@ class SchemaDefinitionInternal:
     element_uri_prefix: str
     definition_path: str
     schema_id: str
-    schema_data: SchemaContentsProtocol
+    schema_data: dict
     schema_version: str
-
-
-class ValidatorTypeProtocol(typing.Protocol):
-    def __call__(
-        self, *, schema, registry: SchemaRegistry
-    ) -> jsonschema.protocols.Validator:
-        ...
-
-    def check_schema(self, schema):
-        ...
 
 
 def create_all_validators(
     *definitions: SchemaDefinition,
-    validator_type: ValidatorTypeProtocol = jsonschema.Draft202012Validator,
+    validator_type: type[json_protocols.Validator] = jsonschema.Draft202012Validator,
 ):
     validators = {}
     schema_definitions = []
@@ -83,6 +74,9 @@ def create_all_validators(
 
         schema_res = referencing.Resource.from_contents(schema_data)
         schema_id = schema_res.id()
+        if schema_id is None:
+            raise ValueError("Schema $id must be present.")
+
         schemas_registry.append((schema_id, schema_res))
 
         schema_definitions.append(
@@ -111,9 +105,9 @@ def create_all_validators(
 
 def validator_load_multi(
     *,
-    registry: referencing.Registry,
+    registry: SchemaRegistry,
     schema: SchemaDefinitionInternal,
-    validator_type: ValidatorTypeProtocol,
+    validator_type: type[json_protocols.Validator],
 ):
     """
 
@@ -142,7 +136,7 @@ def validator_load_multi(
         yield element_id, validator
 
 
-def schema_traverse(schema_contents: SchemaContentsProtocol, path: str) -> typing.Any:
+def schema_traverse(schema_contents: dict, path: str) -> typing.Any:
     """Traverse slash-separated path in dict-like structure."""
     parts = path.split("/")
 
