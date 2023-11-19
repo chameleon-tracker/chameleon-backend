@@ -14,10 +14,7 @@ __all__ = [
 
 @typing.runtime_checkable
 class StepHandlerProtocol(typing.Protocol):
-    async def __call__(
-        self,
-        context: ctx.StepContext,
-    ) -> bool | None:
+    async def __call__(self, context: ctx.StepContext) -> bool | None:
         ...
 
 
@@ -133,13 +130,10 @@ def defined_steps(
 
 class UrlHandler:
     steps: UrlHandlerSteps
-    error_status_to_http: typing.Mapping[int, int] | None
+    error_status_to_http: typing.Mapping[int, int]
 
     def __init__(
-        self,
-        *,
-        steps: UrlHandlerSteps,
-        error_status_to_http: typing.Mapping[int, int] | None = None,
+        self, *, steps: UrlHandlerSteps, error_status_to_http: typing.Mapping[int, int]
     ):
         self.steps = steps
         self.error_status_to_http = error_status_to_http

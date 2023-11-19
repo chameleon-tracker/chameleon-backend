@@ -14,10 +14,15 @@ class InvalidHandlerProtocol(typing.Protocol):
 def method_dispatcher(
     *,
     invalid_method: InvalidHandlerProtocol,
+    error_status_to_http: typing.Mapping[int, int] | None = None,
     **kwargs: multi.StepsDefinitionDict,
 ):
+    error_status_to_http = error_status_to_http or {}
     table = {
-        key.lower(): core.UrlHandler(steps=multi.multi_processor_steps(**value))
+        key.lower(): core.UrlHandler(
+            steps=multi.multi_processor_steps(**value),
+            error_status_to_http=error_status_to_http,
+        )
         for key, value in kwargs.items()
     }
 

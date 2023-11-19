@@ -35,9 +35,9 @@ class ChameleonAppConfig(AppConfig):
         if not label:
             label = name.replace(".", "_")
 
-        cls.name = name
-        cls.label = label
-        cls.default = default
+        setattr(cls, "name", name)
+        setattr(cls, "label", label)
+        setattr(cls, "default", default)
 
 
 # cleanup namespace

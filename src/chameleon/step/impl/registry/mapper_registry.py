@@ -1,6 +1,6 @@
 import typing
 
-from .registry import ProcessorRegistry
+from chameleon.step.impl.registry import registry
 
 
 __all__ = (
@@ -15,7 +15,7 @@ __all__ = (
 
 GetattrProtocol = typing.Callable[[typing.Any, str], typing.Any]
 
-mapper_registry = ProcessorRegistry("mapper")
+mapper_registry = registry.ProcessorRegistry("mapper")
 
 
 def register_simple_mapping(

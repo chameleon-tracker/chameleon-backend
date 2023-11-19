@@ -7,12 +7,12 @@ import yaml
 import referencing
 from referencing.jsonschema import SchemaRegistry
 
-from chameleon.step.impl.registry import ProcessorRegistry
+from chameleon.step.impl.registry import registry as reg
 
 
 __all__ = ("SchemaDefinition", "create_all_validators", "validator_registry")
 
-validator_registry = ProcessorRegistry("validator")
+validator_registry = reg.ProcessorRegistry("validator")
 global_validators: typing.MutableMapping[str, json_protocols.Validator] = {}
 
 

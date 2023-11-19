@@ -4,7 +4,8 @@ from unittest import mock
 
 import pytest
 
-from chameleon.step import core
+from chameleon.step.core import core
+from chameleon.step.core import context as ctx
 from chameleon.step.core import multi
 
 
@@ -13,7 +14,7 @@ class StepParams:
     exists: bool = True
     return_value: bool = True
     awaited: bool = True
-    step: str | None = "test"
+    step: str = "test"
 
 
 step_not_exists = StepParams(exists=False)
@@ -21,9 +22,9 @@ step_not_awaited = StepParams(awaited=False)
 step_return_false = StepParams(return_value=False)
 step_default = StepParams()
 step_test1 = StepParams(awaited=False, step="test1")
-test_context = core.StepContext(
+test_context = ctx.StepContext(
     current_step="test",
-    request_info=core.StepContextRequestInfo(request=object()),
+    request_info=ctx.StepContextRequestInfo(request=object()),
     error_status_to_http={},
 )
 
@@ -55,6 +56,7 @@ async def test_multi_dict_step(
         default_handler=default_handler, steps_by_name={step_params.step: step_handler}
     )
 
+    assert step is not None
     assert step is not default_handler
 
     value = await step(test_context)
@@ -292,6 +294,8 @@ async def ensure_single_step_test_impl(
         assert step is None
         return
 
+    assert step is not None
+
     value = await step(test_context)
     assert value is expect_result
 
@@ -301,7 +305,7 @@ async def ensure_single_step_test_impl(
 
 def create_multi_step(
     step_params: MultiStepParams,
-) -> tuple[mock.AsyncMock, mock.AsyncMock, core.StepHandlerMulti]:
+) -> tuple[mock.AsyncMock | None, mock.AsyncMock | None, multi.StepHandlerMulti | None]:
     step1 = create_step(step_params.step1)
     step2 = create_step(step_params.step2)
 
@@ -317,17 +321,20 @@ def create_multi_step(
 
 
 def assert_multi_step_awaited(
-    step_params: MultiStepParams, step1: mock.AsyncMock, step2: mock.AsyncMock
+    step_params: MultiStepParams,
+    step1: mock.AsyncMock | None,
+    step2: mock.AsyncMock | None,
 ):
     assert_step_awaited(step_params.step1, step1)
     assert_step_awaited(step_params.step2, step2)
 
 
-def assert_step_awaited(params: StepParams, handler: mock.AsyncMock):
+def assert_step_awaited(params: StepParams, handler: mock.AsyncMock | None):
     if not params.exists:
         assert handler is None
         return
 
+    assert handler is not None
     if params.awaited:
         handler.assert_awaited_once()
     else:

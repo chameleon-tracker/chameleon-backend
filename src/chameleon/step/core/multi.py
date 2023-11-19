@@ -81,13 +81,13 @@ async def noop_step(context: ctx.StepContext):
 T = typing.TypeVar("T")
 
 
-def clean_values(source: typing.Mapping[str, T]) -> typing.Mapping[str, T]:
+def clean_values(source: typing.Mapping[str, T | None]) -> typing.Mapping[str, T]:
     return {key: value for key, value in source.items() if value is not None}
 
 
 def multi_dict_step(
     default_handler: core.StepHandlerProtocol | None,
-    steps_by_name: typing.Mapping[str, core.StepHandlerProtocol],
+    steps_by_name: typing.Mapping[str, core.StepHandlerProtocol | None],
 ) -> core.StepHandlerProtocol | None:
     steps = clean_values(steps_by_name)
 
@@ -168,7 +168,7 @@ def ensure_single_step(
 
 
 def prepare_multi_handler_steps(
-    kwargs: typing.Unpack[StepsDefinitionDict],
+    kwargs: StepsDefinitionDict,
 ) -> typing.Mapping[str, core.StepHandlerProtocol]:
     defaults: typing.MutableMapping[str, core.StepHandlerProtocol] = {}
 
@@ -178,7 +178,7 @@ def prepare_multi_handler_steps(
             defaults[key] = kwargs.pop(key)
 
     # Ensure all normal handlers become single function (with defaults)
-    result: dict[str, core.StepHandlerProtocol] = {}
+    result: dict[str, core.StepHandlerProtocol | None] = {}
 
     for field in dataclasses.fields(core.UrlHandlerSteps):
         key = field.name

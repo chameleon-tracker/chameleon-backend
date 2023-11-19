@@ -42,7 +42,7 @@ async def test_processing_order():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", processing_step_order)
-async def test_faulty_processing_handler(faulty_step: str):
+async def test_faulty_processing_step(faulty_step: str):
     step_order: list[str] = []
     expected_steps = (
         tuple(itertools.takewhile(lambda x: x != faulty_step, processing_step_order))
@@ -55,7 +55,7 @@ async def test_faulty_processing_handler(faulty_step: str):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", response_step_order)
-async def test_faulty_response_handler(faulty_step: str):
+async def test_faulty_response_step(faulty_step: str):
     step_order: list[str] = []
     expected_steps = (
         processing_step_order
@@ -74,13 +74,13 @@ async def test_faulty_response_handler(faulty_step: str):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", processing_step_order)
-async def test_faulty_step_handler_unhandled(faulty_step: str):
+async def test_faulty_processing_step_unhandled(faulty_step: str):
     await faulty_step_handler_unhandled(faulty_step, True)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("faulty_step", response_step_order)
-async def test_faulty_step_handler_unhandled(faulty_step: str):
+async def test_faulty_response_step_unhandled(faulty_step: str):
     await faulty_step_handler_unhandled(faulty_step, False)
 
 
@@ -88,6 +88,7 @@ async def faulty_step_handler_unhandled(faulty_step: str, expect_exception: bool
     step_order: list[str] = []
 
     total_step_order = processing_step_order + response_step_order
+    exception_step: tuple[str]
 
     if expect_exception:
         exception_step = (f"exception: {faulty_step}",)
