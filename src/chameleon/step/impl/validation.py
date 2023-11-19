@@ -1,5 +1,3 @@
-import typing
-
 from chameleon.step.impl.registry import validator_registry
 from chameleon.step import core
 

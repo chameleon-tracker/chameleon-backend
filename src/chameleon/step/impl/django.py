@@ -13,11 +13,19 @@ logger = logging.getLogger(__name__)
 __all__ = ("method_dispatcher", "django_json_steps")
 
 
-def method_dispatcher(**kwargs: core.StepsDefinitionDict):
+def method_dispatcher(
+    *,
+    error_status_to_http: typing.Mapping[int, int] | None = None,
+    **kwargs: core.StepsDefinitionDict
+):
     async def invalid_method(*_args, **_kwargs):
         return http.HttpResponseNotAllowed(kwargs.keys())
 
-    return core.method_dispatcher(invalid_method=invalid_method, **kwargs)
+    return core.method_dispatcher(
+        invalid_method=invalid_method,
+        error_status_to_http=error_status_to_http,
+        **kwargs
+    )
 
 
 async def django_fill_request_info(context: core.StepContext):
@@ -81,11 +89,12 @@ def django_json_steps(
     exception_handler_map: typing.Mapping[str, core.StepHandlerProtocol] | None = None,
     **kwargs: typing.Unpack[DjangoParams]
 ) -> core.StepsDefinitionDict:
-    exception_handler = kwargs.get("exception_handler")
+    exception_handler = kwargs.get("exception_handler_default")
 
     if exception_handler is not None and exception_handler_map is not None:
         raise ValueError(
-            'Set both "exception_handler" and "exception_handler_map" is not allowed'
+            'Set both "exception_handler_default" and'
+            ' "exception_handler_map" is not allowed'
         )
 
     if exception_handler is None:
@@ -98,7 +107,7 @@ def django_json_steps(
             and "business" not in exception_handler
         ):
             exception_handler["business"] = generic_business_error_handler
-        kwargs["exception_handler"] = exception_handler
+        kwargs["exception_handler_default"] = exception_handler
 
     default_json_kwargs = default.default_json_steps(**kwargs)
 
