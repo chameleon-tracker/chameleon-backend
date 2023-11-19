@@ -1,10 +1,8 @@
+import dataclasses
 import typing
 
 from chameleon.step.core import core
 from chameleon.step.core import context as ctx
-
-
-DEFAULT_SUFFIX = "_default"
 
 __all__ = ("multi_processor_steps", "StepHandlerMulti", "StepsDefinitionDict")
 
@@ -13,6 +11,10 @@ StepHandlerMulti = (
     | typing.Sequence[core.StepHandlerProtocol]
     | typing.Mapping[str, core.StepHandlerProtocol]
 )
+
+DEFAULT_SUFFIX = "_default"
+PRE_SUFFIX = "_pre"
+POST_SUFFIX = "_post"
 
 
 class StepsDefinitionDict(typing.TypedDict, total=False):
@@ -76,16 +78,25 @@ async def noop_step(context: ctx.StepContext):
     ...
 
 
+T = typing.TypeVar("T")
+
+
+def clean_values(source: typing.Mapping[str, T]) -> typing.Mapping[str, T]:
+    return {key: value for key, value in source.items() if value is not None}
+
+
 def multi_dict_step(
     default_handler: core.StepHandlerProtocol | None,
     steps_by_name: typing.Mapping[str, core.StepHandlerProtocol],
-) -> core.StepHandlerProtocol:
-    if not steps_by_name:
+) -> core.StepHandlerProtocol | None:
+    steps = clean_values(steps_by_name)
+
+    if not steps:
         return default_handler
 
     async def multi_dict_handler(context: ctx.StepContext) -> bool:
         current_step = context.current_step
-        handler = steps_by_name.get(current_step)
+        handler = steps.get(current_step)
 
         if handler is None:
             handled = False
@@ -102,11 +113,11 @@ def multi_dict_step(
 
 def list_step(
     steps: typing.Sequence[core.StepHandlerProtocol],
-) -> core.StepHandlerProtocol:
+) -> core.StepHandlerProtocol | None:
     steps = tuple(filter(lambda step: step is not None, steps))
 
     if len(steps) == 0:
-        return noop_step
+        return None
 
     if len(steps) == 1:
         return steps[0]
@@ -119,47 +130,70 @@ def list_step(
     return list_handler
 
 
+def make_single_step(
+    key: str,
+    step_definition: StepHandlerMulti,
+    step_default: core.StepHandlerProtocol | None,
+) -> core.StepHandlerProtocol | None:
+    if step_definition is None:
+        return step_default
+
+    # step has been defined explicitly,ignoring default
+    if isinstance(step_definition, core.StepHandlerProtocol):
+        return step_definition
+
+    # step is a sequence, ignoring default
+    if isinstance(step_definition, typing.Sequence):
+        return list_step(step_definition)
+
+    # step is mapping, e.g. exception handler using default
+    if isinstance(step_definition, typing.Mapping):
+        return multi_dict_step(step_default, step_definition)
+
+    raise ValueError(f"Step {key} has unknown type: {step_definition!r}")
+
+
 def ensure_single_step(
     key: str,
-    value: StepHandlerMulti,
-    defaults: typing.MutableMapping[str, typing.Any] | None = None,
-) -> core.StepHandlerProtocol:
-    if isinstance(value, typing.Sequence):
-        return list_step(value)
+    step_definition: StepHandlerMulti,
+    defaults: typing.MutableMapping[str, typing.Any],
+) -> core.StepHandlerProtocol | None:
+    key_default = key + DEFAULT_SUFFIX
+    step_default = make_single_step(key_default, defaults.pop(key_default, None), None)
+    step = make_single_step(key_default, step_definition, step_default)
 
-    if isinstance(value, typing.Mapping):
-        if defaults:
-            default_handler = defaults.pop(key + DEFAULT_SUFFIX, None)
-        else:
-            default_handler = None
-        return multi_dict_step(default_handler, value)
-
-    return value
+    if step is None:
+        return step_default
+    return step
 
 
-def multi_processor_steps(
-    **kwargs: typing.Unpack[StepsDefinitionDict],
-) -> core.UrlHandlerSteps:
-    defaults: StepsDefinitionDict = {}
+def prepare_multi_handler_steps(
+    kwargs: typing.Unpack[StepsDefinitionDict],
+) -> typing.Mapping[str, core.StepHandlerProtocol]:
+    defaults: typing.MutableMapping[str, core.StepHandlerProtocol] = {}
 
     # Extract all default handlers from kwargs to defaults dict
     for key in list(kwargs.keys()):
         if key.endswith(DEFAULT_SUFFIX):
             defaults[key] = kwargs.pop(key)
 
-    # Ensure all normal handlers are single function (with defaults)
-    result: StepsDefinitionInternal = {
-        key: ensure_single_step(key, value, defaults) for key, value in kwargs.items()
-    }
+    # Ensure all normal handlers become single function (with defaults)
+    result: dict[str, core.StepHandlerProtocol] = {}
 
-    # Move
-    for key, value in defaults.items():
-        modified_key = key[: -len(DEFAULT_SUFFIX)]
-        if modified_key not in result:
-            result[modified_key] = ensure_single_step(modified_key, value, None)
+    for field in dataclasses.fields(core.UrlHandlerSteps):
+        key = field.name
+        step = ensure_single_step(key, kwargs.pop(key, None), defaults)
+        result[key] = step
 
-    for key, value in list(result.items()):
-        if value is None:
-            del result[key]
+    if kwargs or defaults:
+        common = {**kwargs, **defaults}
+        raise ValueError(f"Found unsupported keys in kwargs: {tuple(common.keys())}")
 
+    return clean_values(result)
+
+
+def multi_processor_steps(
+    **kwargs: typing.Unpack[StepsDefinitionDict],
+) -> core.UrlHandlerSteps:
+    result = prepare_multi_handler_steps(kwargs)
     return core.UrlHandlerSteps(**result)
