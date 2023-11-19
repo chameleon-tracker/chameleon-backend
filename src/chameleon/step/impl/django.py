@@ -2,7 +2,7 @@ import logging
 import typing
 
 from django import http
-from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
 from chameleon.step import core
 from chameleon.step import impl as default
@@ -10,13 +10,11 @@ from chameleon.step import impl as default
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("method_dispatcher", "django_default_json_hooks")
+__all__ = ("method_dispatcher", "django_json_steps")
 
 
-def method_dispatcher(
-    **kwargs: core.ProcessorSteps | typing.Mapping[str, core.StepHandlerProtocol]
-):
-    async def invalid_method(_request, *_args, **_kwargs):
+def method_dispatcher(**kwargs: core.StepsDefinitionDict):
+    async def invalid_method(*_args, **_kwargs):
         return http.HttpResponseNotAllowed(kwargs.keys())
 
     return core.method_dispatcher(invalid_method=invalid_method, **kwargs)
@@ -24,6 +22,8 @@ def method_dispatcher(
 
 async def django_fill_request_info(context: core.StepContext):
     request: http.HttpRequest = context.request_info.request
+    if request.method is None:
+        raise ValueError("Invalid request method.")
     context.request_info.method = request.method
     context.request_info.content_type = request.content_type
     context.request_info.content_encoding = request.encoding
@@ -32,7 +32,7 @@ async def django_fill_request_info(context: core.StepContext):
 async def extract_body(context: core.StepContext):
     request_method = context.request_info.method
 
-    if request_method == "POST" or request_method == "PUT":
+    if request_method in ("POST", "PUT"):
         context.request_body = context.request_info.request.body
 
 
@@ -73,36 +73,52 @@ async def create_response_json(context: core.StepContext):
     context.response = response
 
 
-def django_default_json_hooks(
-    exception_handler: typing.Mapping[str, core.StepHandlerProtocol] = None, **kwargs
-):
+class DjangoParams(core.StepsDefinitionDict, default.DefaultJsonSteps):
+    pass
+
+
+def django_json_steps(
+    exception_handler_map: typing.Mapping[str, core.StepHandlerProtocol] | None = None,
+    **kwargs: typing.Unpack[DjangoParams]
+) -> core.StepsDefinitionDict:
+    exception_handler = kwargs.get("exception_handler")
+
+    if exception_handler is not None and exception_handler_map is not None:
+        raise ValueError(
+            'Set both "exception_handler" and "exception_handler_map" is not allowed'
+        )
+
     if exception_handler is None:
-        exception_handler = {}
-    if (
-        isinstance(exception_handler, typing.MutableMapping)
-        and "business" not in exception_handler
-    ):
-        exception_handler["business"] = generic_business_error_handler
+        exception_handler = exception_handler_map
+        if exception_handler is None:
+            exception_handler = {}
 
-    default_json_kwargs = default.default_json_steps(
-        exception_handler=exception_handler, **kwargs
+        if (
+            isinstance(exception_handler, typing.MutableMapping)
+            and "business" not in exception_handler
+        ):
+            exception_handler["business"] = generic_business_error_handler
+        kwargs["exception_handler"] = exception_handler
+
+    default_json_kwargs = default.default_json_steps(**kwargs)
+
+    default_json_kwargs.update(
+        {
+            "fill_request_info_default": django_fill_request_info,
+            "check_headers_default": [
+                django_check_accepts_json,
+                default.check_content_type_json,
+            ],
+            "extract_body_default": extract_body,
+            "create_response_default": create_response_json,
+        }
     )
 
-    default_kwargs = dict(
-        fill_request_info_default=django_fill_request_info,
-        check_headers_default=[
-            django_check_accepts_json,
-            default.check_content_type_json,
-        ],
-        extract_body_default=extract_body,
-        create_response_default=create_response_json,
-    )
-
-    return {**default_kwargs, **default_json_kwargs}
+    return default_json_kwargs
 
 
 async def generic_business_error_handler(context: core.StepContext) -> bool:
-    if isinstance(context.exception, models.ObjectDoesNotExist):
+    if isinstance(context.exception, ObjectDoesNotExist):
         context.error_status = 404
 
         if context.output_raw is None:

@@ -1,5 +1,5 @@
-from django.db import models
 from itertools import chain
+from django.db import models
 
 
 class PrintableModel(models.Model):
@@ -11,7 +11,8 @@ class PrintableModel(models.Model):
     def to_dict(self):
         """Convert model to a dict."""
 
-        opts = self._meta
+        # noinspection PyUnresolvedReferences
+        opts = self._meta  # pylint: disable=E1101
         data = {}
         for f in chain(opts.concrete_fields, opts.private_fields):
             data[f.name] = f.value_from_object(self)

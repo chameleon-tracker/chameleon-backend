@@ -9,7 +9,7 @@ from chameleon.step import core
 async def check_content_type_json(context: core.StepContext):
     request_method: str = context.request_info.method
 
-    if request_method == "POST" or request_method == "PUT":
+    if request_method in ("POST", "PUT"):
         if context.request_info.content_type != "application/json":
             raise ValueError("Unsupported content type")
 
@@ -18,7 +18,7 @@ def deserialize_json(loads=json.loads):
     async def decode(context: core.StepContext):
         request_method = context.request_info.method
 
-        if request_method == "POST" or request_method == "PUT":
+        if request_method in ("POST", "PUT"):
             context.input_raw = loads(context.request_body)
 
     return decode

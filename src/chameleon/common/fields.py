@@ -8,7 +8,7 @@ from chameleon.common.enums import MarkupLanguages
 
 __all__ = ["choice_field", "markup_field"]
 
-EnumerationType = typing.TypeVar("EnumerationType", bound=enums.Choices)
+Choices = typing.TypeVar("Choices", bound=enums.Choices)
 
 
 def set_kwargs_value(target: typing.MutableMapping[str, typing.Any], **kwargs):
@@ -37,9 +37,9 @@ def set_kwargs_default(target: typing.MutableMapping[str, typing.Any], **kwargs)
 
 
 def choice_field(
-    enumeration: type[EnumerationType],
-    default: EnumerationType | None = None,
-    help_text: str = None,
+    enumeration: type[Choices],
+    default: Choices | None = None,
+    help_text: str | None = None,
     /,
     *,
     field_type: type[fields.Field] = fields.CharField,
@@ -72,7 +72,7 @@ def choice_field(
     return field_type(**kwargs)
 
 
-def markup_field(model_field: str = None) -> django.db.models.Field:
+def markup_field(model_field: str | None = None) -> django.db.models.Field:
     """Generate choice field for markup language.
 
     Args:

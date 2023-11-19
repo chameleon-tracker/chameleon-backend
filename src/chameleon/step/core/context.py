@@ -16,9 +16,9 @@ class StepContextRequestInfo:
     )
     method: str = create_field(doc="""HTTP request method.""")
 
-    content_type: str | bytes = create_field(doc="""Request content type.""")
+    content_type: str | bytes | None = create_field(doc="""Request content type.""")
 
-    content_encoding: str = create_field(doc="""Request content encoding.""")
+    content_encoding: str | None = create_field(doc="""Request content encoding.""")
 
 
 @dataclasses.dataclass(slots=True, kw_only=True)
