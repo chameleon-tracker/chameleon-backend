@@ -35,7 +35,7 @@ response_step_order = (
 
 @pytest.mark.asyncio
 async def test_processing_order():
-    step_order = []
+    step_order: list[str] = []
     await generate_and_run_steps(step_order_collect=step_order)
     assert tuple(step_order) == processing_step_order + response_step_order
 
@@ -73,14 +73,32 @@ async def test_faulty_response_handler(faulty_step: str):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("faulty_step", processing_step_order + response_step_order)
+@pytest.mark.parametrize("faulty_step", processing_step_order)
 async def test_faulty_step_handler_unhandled(faulty_step: str):
+    await faulty_step_handler_unhandled(faulty_step, True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("faulty_step", response_step_order)
+async def test_faulty_step_handler_unhandled(faulty_step: str):
+    await faulty_step_handler_unhandled(faulty_step, False)
+
+
+async def faulty_step_handler_unhandled(faulty_step: str, expect_exception: bool):
     step_order: list[str] = []
 
     total_step_order = processing_step_order + response_step_order
-    expected_steps = tuple(
-        itertools.takewhile(lambda x: x != faulty_step, total_step_order)
-    ) + (faulty_step, f"exception: {faulty_step}")
+
+    if expect_exception:
+        exception_step = (f"exception: {faulty_step}",)
+    else:
+        exception_step = ()
+
+    expected_steps = (
+        tuple(itertools.takewhile(lambda x: x != faulty_step, total_step_order))
+        + (faulty_step,)
+        + exception_step
+    )
     with pytest.raises(TestException) as exc_info:
         await generate_and_run_steps(
             step_order_collect=step_order,
@@ -94,7 +112,7 @@ async def test_faulty_step_handler_unhandled(faulty_step: str):
 
 def step_handler_generator(
     *,
-    expected_step: str | None,
+    expected_step: str,
     step_order_collect: list[str],
     request_obj: typing.Any,
     error_code_mapping: typing.Mapping[int, int],
@@ -132,8 +150,8 @@ def step_handler_generator(
 
 async def generate_and_run_steps(
     *,
-    faulty_step: str | None = None,
-    step_order_collect: list,
+    faulty_step: str = "__unknown__",
+    step_order_collect: list[str],
     exception_handled: bool = True,
 ):
     steps = {}
