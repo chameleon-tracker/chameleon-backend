@@ -19,7 +19,7 @@ class StepHandlerProtocol(typing.Protocol):
 
 
 @dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
-class UrlHandlerSteps:
+class UrlHandlerProcessSteps:
     # framework-specific
     fill_request_info: StepHandlerProtocol | None = create_field(
         doc="""Extracts basic request info to minimize dependency from framework."""
@@ -34,7 +34,6 @@ class UrlHandlerSteps:
     check_headers: StepHandlerProtocol | None = create_field(
         doc="""Check request headers are expected."""
     )
-
     check_access_pre_read: StepHandlerProtocol | None = create_field(
         doc="""Check a requester has an access to that resource"
          "(body hasn't been read)."""
@@ -53,7 +52,6 @@ class UrlHandlerSteps:
     deserialize: StepHandlerProtocol | None = create_field(
         doc="""Deserialize request body to the input_raw."""
     )
-
     # could be generated from default impl
     validate_input: StepHandlerProtocol | None = create_field(
         doc="""Validate input_raw and/or request body."""
@@ -77,24 +75,6 @@ class UrlHandlerSteps:
         doc="""Map output_business to the raw representation to be serialized."""
     )
 
-    exception_handler: StepHandlerProtocol | None = create_field()
-
-    serialize: StepHandlerProtocol | None = create_field(
-        doc="""Serialize output_raw to be passed for transport layers."""
-    )
-    encrypt: StepHandlerProtocol | None = create_field(
-        doc="""Optional encryption, signing, etc."""
-    )
-
-    response_headers: StepHandlerProtocol | None = create_field(
-        doc="""Prepare additional response headers."""
-    )
-
-    # framework-specific
-    create_response: StepHandlerProtocol | None = create_field(
-        doc="""Create HTTP response to be returned."""
-    )
-
     def process_order(self):
         """Intended execution order."""
         return (
@@ -111,6 +91,29 @@ class UrlHandlerSteps:
             ("business", self.business),
             ("map_output", self.map_output),
         )
+
+
+@dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
+class UrlHandlerSteps(UrlHandlerProcessSteps):
+    exception_handler: StepHandlerProtocol | None = create_field(
+        doc="""Handle an exception."""
+    )
+
+    serialize: StepHandlerProtocol | None = create_field(
+        doc="""Serialize output_raw to be passed for transport layers."""
+    )
+    encrypt: StepHandlerProtocol | None = create_field(
+        doc="""Optional encryption, signing, etc."""
+    )
+
+    response_headers: StepHandlerProtocol | None = create_field(
+        doc="""Prepare additional response headers."""
+    )
+
+    # framework-specific
+    create_response: StepHandlerProtocol | None = create_field(
+        doc="""Create HTTP response to be returned."""
+    )
 
     def response_order(self):
         """Intended response preparation order."""

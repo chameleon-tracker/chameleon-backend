@@ -5,7 +5,8 @@ from django import http
 from django.core.exceptions import ObjectDoesNotExist
 
 from chameleon.step import core
-from chameleon.step import impl as default
+from chameleon.step.impl import impl as default
+from chameleon.step.impl import jjson as json
 
 
 logger = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ def django_json_steps(
             "fill_request_info_default": django_fill_request_info,
             "check_headers_default": [
                 django_check_accepts_json,
-                default.check_content_type_json,
+                json.check_content_type_json,
             ],
             "extract_body_default": extract_body,
             "create_response_default": create_response_json,
