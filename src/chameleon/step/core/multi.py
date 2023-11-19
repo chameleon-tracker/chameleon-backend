@@ -54,26 +54,6 @@ class StepsDefinitionDict(typing.TypedDict, total=False):
     create_response_default: StepHandlerMulti | None
 
 
-class StepsDefinitionInternal(typing.TypedDict, total=False):
-    fill_request_info: core.StepHandlerProtocol | None
-    check_authenticated: core.StepHandlerProtocol | None
-    check_headers: core.StepHandlerProtocol | None
-    check_access_pre_read: core.StepHandlerProtocol | None
-    extract_body: core.StepHandlerProtocol | None
-    decrypt: core.StepHandlerProtocol | None
-    deserialize: core.StepHandlerProtocol | None
-    validate_input: core.StepHandlerProtocol | None
-    check_access_post_read: core.StepHandlerProtocol | None
-    map_input: core.StepHandlerProtocol | None
-    business: core.StepHandlerProtocol | None
-    map_output: core.StepHandlerProtocol | None
-    exception_handler: core.StepHandlerProtocol | None
-    serialize: core.StepHandlerProtocol | None
-    encrypt: core.StepHandlerProtocol | None
-    response_headers: core.StepHandlerProtocol | None
-    create_response: core.StepHandlerProtocol | None
-
-
 async def noop_step(context: ctx.StepContext):
     ...
 
@@ -182,6 +162,7 @@ def prepare_multi_handler_steps(
 
     for field in dataclasses.fields(core.UrlHandlerSteps):
         key = field.name
+        # noinspection PyTypeChecker
         step = ensure_single_step(key, kwargs.pop(key, None), defaults)
         result[key] = step
 
@@ -195,5 +176,7 @@ def prepare_multi_handler_steps(
 def multi_processor_steps(
     **kwargs: typing.Unpack[StepsDefinitionDict],
 ) -> core.UrlHandlerSteps:
+    # noinspection PyTypeChecker
+    # PyCharm can't properly recognize this ATM
     result = prepare_multi_handler_steps(kwargs)
     return core.UrlHandlerSteps(**result)

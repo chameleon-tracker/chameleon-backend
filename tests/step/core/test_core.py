@@ -93,7 +93,7 @@ async def faulty_step_handler_unhandled(faulty_step: str, expect_exception: bool
     if expect_exception:
         exception_step = (f"exception: {faulty_step}",)
     else:
-        exception_step = ()
+        exception_step = ()  # type: typing.IO[str]
 
     expected_steps = (
         tuple(itertools.takewhile(lambda x: x != faulty_step, total_step_order))
