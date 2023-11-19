@@ -3,10 +3,10 @@ import logging
 import typing
 
 from chameleon.step import core
-from chameleon.step.impl import default_mapping
-from chameleon.step.impl import default_validation
-from chameleon.step.impl import deserialize_json
-from chameleon.step.impl import serialize_json
+from chameleon.step.impl.mapping import default_mapping
+from chameleon.step.impl.validation import default_validation
+from chameleon.step.impl.jjson import deserialize_json
+from chameleon.step.impl.jjson import serialize_json
 
 
 logger = logging.getLogger(__name__)
