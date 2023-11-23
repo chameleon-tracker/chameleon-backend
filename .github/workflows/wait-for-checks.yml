@@ -1,0 +1,9 @@
+name: Wait all checks
+
+on:
+  pull_request:
+    types: [ assigned, opened, synchronize, reopened ]
+
+jobs:
+    wait-all-checks:
+        uses: chameleon-tracker/.github/.github/workflows/wait-all-checks.yml@main
