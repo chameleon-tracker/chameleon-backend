@@ -6,4 +6,6 @@ on:
 
 jobs:
     wait-all-checks:
+        permissions:
+            checks: read
         uses: chameleon-tracker/.github/.github/workflows/wait-all-checks.yml@main
