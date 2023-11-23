@@ -8,7 +8,6 @@ from chameleon.step import core
 from chameleon.step.impl import impl as default
 from chameleon.step.impl import jjson as json
 
-
 logger = logging.getLogger(__name__)
 
 __all__ = ("method_dispatcher", "django_json_steps")
@@ -17,7 +16,7 @@ __all__ = ("method_dispatcher", "django_json_steps")
 def method_dispatcher(
     *,
     error_status_to_http: typing.Mapping[int, int] | None = None,
-    **kwargs: core.StepsDefinitionDict
+    **kwargs: core.StepsDefinitionDict,
 ):
     async def invalid_method(*_args, **_kwargs):
         return http.HttpResponseNotAllowed(kwargs.keys())
@@ -25,7 +24,7 @@ def method_dispatcher(
     return core.method_dispatcher(
         invalid_method=invalid_method,
         error_status_to_http=error_status_to_http,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -88,7 +87,7 @@ class DjangoParams(core.StepsDefinitionDict, default.DefaultJsonSteps):
 
 def django_json_steps(
     exception_handler_map: typing.Mapping[str, core.StepHandlerProtocol] | None = None,
-    **kwargs: typing.Unpack[DjangoParams]
+    **kwargs: typing.Unpack[DjangoParams],
 ) -> core.StepsDefinitionDict:
     exception_handler = kwargs.get("exception_handler_default")
 

@@ -14,10 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
-from django.urls import include
-from django.urls import re_path
+from django import urls
 
 from chameleon.api import urls as api
 
-urlpatterns = [re_path("^api", include(api))]
+urlpatterns = [urls.re_path("^api", urls.include(api))]

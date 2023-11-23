@@ -4,6 +4,7 @@ import typing
 import uuid
 
 import pytest
+
 from chameleon.step import core
 
 
@@ -93,7 +94,7 @@ async def faulty_step_handler_unhandled(faulty_step: str, expect_exception: bool
     if expect_exception:
         exception_step = (f"exception: {faulty_step}",)
     else:
-        exception_step = ()  # type: typing.IO[str]
+        exception_step = ()  # str
 
     expected_steps = (
         tuple(itertools.takewhile(lambda x: x != faulty_step, total_step_order))

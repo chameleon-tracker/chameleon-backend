@@ -8,7 +8,6 @@ from chameleon.step.impl.validation import default_validation
 from chameleon.step.impl.jjson import deserialize_json
 from chameleon.step.impl.jjson import serialize_json
 
-
 logger = logging.getLogger(__name__)
 
 __all__ = ("default_json_steps", "DefaultJsonSteps")

@@ -1,8 +1,8 @@
 import dataclasses
 import typing
 
-from chameleon.step.core import core
 from chameleon.step.core import context as ctx
+from chameleon.step.core import core
 
 __all__ = ("multi_processor_steps", "StepHandlerMulti", "StepsDefinitionDict")
 
