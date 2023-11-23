@@ -1,6 +1,5 @@
-from chameleon.step.impl.registry import validator_registry
 from chameleon.step import core
-
+from chameleon.step.impl.registry import validator_registry
 
 __all__ = ("default_validation",)
 

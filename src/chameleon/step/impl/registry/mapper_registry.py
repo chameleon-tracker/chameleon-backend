@@ -2,7 +2,6 @@ import typing
 
 from chameleon.step.impl.registry import registry
 
-
 __all__ = (
     "mapper_registry",
     "register_simple_mapping",
@@ -26,7 +25,7 @@ def register_simple_mapping(
     get_field_fun: GetattrProtocol,
     include_none=False,
     fields: typing.Sequence[str] | None = None,
-    custom_mapping: typing.Mapping[str, str] | None = None
+    custom_mapping: typing.Mapping[str, str] | None = None,
 ):
     """Register simple mapping function.
 
@@ -66,7 +65,7 @@ def register_simple_mapping_dict(
     target_object_type,
     include_none=False,
     fields: typing.Sequence[str] | None = None,
-    custom_mapping: typing.Mapping[str, str] | None = None
+    custom_mapping: typing.Mapping[str, str] | None = None,
 ):
     register_simple_mapping(
         type_id=type_id,
@@ -86,7 +85,7 @@ def register_simple_mapping_object(
     target_object_type,
     include_none=False,
     fields: typing.Sequence[str] | None = None,
-    custom_mapping: typing.Mapping[str, str] | None = None
+    custom_mapping: typing.Mapping[str, str] | None = None,
 ):
     register_simple_mapping(
         type_id=type_id,

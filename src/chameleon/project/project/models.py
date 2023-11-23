@@ -3,7 +3,6 @@ from django.db import models
 from chameleon.common.fields import markup_field
 from chameleon.common.models import ChameleonBaseModel
 
-
 __all__ = ["ChameleonProject"]
 
 

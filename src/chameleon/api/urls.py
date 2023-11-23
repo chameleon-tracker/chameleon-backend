@@ -1,5 +1,5 @@
-from django.urls import include, re_path
+from django import urls
 
 from chameleon.api import project
 
-urlpatterns = (re_path("^project", include(project)),)
+urlpatterns = (urls.re_path("^project", urls.include(project)),)

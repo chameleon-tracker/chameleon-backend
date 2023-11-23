@@ -1,8 +1,8 @@
 from django.db import models
 
+from chameleon.common.fields import markup_field
 from chameleon.common.models import ChameleonBaseModel
 from chameleon.project.project import models as project
-from chameleon.common.fields import markup_field
 
 __all__ = ["ChameleonTicket"]
 

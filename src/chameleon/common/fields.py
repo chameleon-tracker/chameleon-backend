@@ -1,6 +1,5 @@
 import typing
 
-import django.db.models
 from django.db.models import enums
 from django.db.models import fields
 
@@ -44,7 +43,7 @@ def choice_field(
     *,
     field_type: type[fields.Field] = fields.CharField,
     **kwargs,
-) -> django.db.models.Field:
+) -> fields.Field:
     """Generate an enumeration field with some default attributes.
 
     Main goal is minimization code duplication and inconsistency.
@@ -72,7 +71,7 @@ def choice_field(
     return field_type(**kwargs)
 
 
-def markup_field(model_field: str | None = None) -> django.db.models.Field:
+def markup_field(model_field: str | None = None) -> fields.Field:
     """Generate choice field for markup language.
 
     Args:

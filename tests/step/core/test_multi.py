@@ -4,8 +4,8 @@ from unittest import mock
 
 import pytest
 
-from chameleon.step.core import core
 from chameleon.step.core import context as ctx
+from chameleon.step.core import core
 from chameleon.step.core import multi
 
 
