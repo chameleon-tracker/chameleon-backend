@@ -1,7 +1,7 @@
 from django.urls import re_path
 
 from chameleon.project.project import api
-from chameleon.project.project import mapping  # initialize mapping
+from chameleon.project.project import mapping  # noqa initialize mapping
 from chameleon.step.impl import django
 
 processor_create = django.django_json_steps(
