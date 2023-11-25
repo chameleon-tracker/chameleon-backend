@@ -3,7 +3,7 @@ info:
   title: Project Object API
   version: 0.0.1
 paths:
-  /project:
+  /api/project:
     get:
       description: List available projects
       responses:
@@ -30,7 +30,7 @@ paths:
             application/json:
               schema:
                 $ref: 'schema_project.yml#/$defs/ChameleonProject'
-  /project/{projectId}:
+  /api/project/{projectId}:
     get:
       description: Retrieve given project
       parameters:
