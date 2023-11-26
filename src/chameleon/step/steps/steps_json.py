@@ -2,7 +2,7 @@ import json
 
 from chameleon.step import core
 
-# File named jjson.py because of blackd integration in my editor.
+# File named steps_json.py because of blackd integration in my editor.
 # Files named json.py or types.py are not welcome there.
 
 

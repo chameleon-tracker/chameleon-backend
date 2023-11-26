@@ -1,5 +1,5 @@
 from chameleon.project.project.models import ChameleonProject
-from chameleon.step.impl import registry
+from chameleon.step import registry
 
 registry.register_simple_mapping_dict(
     type_id="project",

@@ -4,7 +4,7 @@ import typing
 import jsonschema
 from referencing.jsonschema import SchemaRegistry
 
-from chameleon.step.impl.registry import registry as reg
+from chameleon.step.registry import registry as reg
 
 
 __all__ = ("validators_registry",)

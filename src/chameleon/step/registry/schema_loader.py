@@ -6,7 +6,7 @@ import jsonschema
 import referencing
 import yaml
 
-from chameleon.step.impl.registry import validator_registry
+from chameleon.step.registry import validator_registry
 
 
 def load_schemas(

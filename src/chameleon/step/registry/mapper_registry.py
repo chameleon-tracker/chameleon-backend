@@ -1,6 +1,6 @@
 import typing
 
-from chameleon.step.impl.registry import registry
+from chameleon.step.registry import registry
 
 __all__ = (
     "mapper_registry",
