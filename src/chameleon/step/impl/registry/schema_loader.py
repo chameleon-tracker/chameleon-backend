@@ -23,7 +23,7 @@ def load_schemas(
 def obtain_schema_data(
     paths: typing.Sequence[str | pathlib.Path], aliases: typing.Mapping[str, str]
 ):
-    schema_ids = set()
+    schema_ids: typing.Set[str] = set()
 
     for base, filename in list_files(paths):
         with open(filename, "rb") as f:
@@ -37,7 +37,7 @@ def obtain_schema_data(
         ):
             if schema_id in schema_ids:
                 raise ValueError(f"Schema with id {schema_id!r} is already defined")
-
+            schema_ids.add(schema_id)
             yield schema_id, schema_resource
 
 
@@ -103,6 +103,7 @@ def list_files(paths: typing.Sequence[str]):
     for path in paths:
         if not os.path.exists(path):
             raise ValueError(f"Path {path!r} doesn't exists")
+
         if os.path.isfile(path) and is_json_or_yaml(path):
             yield filename_tuple(os.path.basename(path), path)
             continue
