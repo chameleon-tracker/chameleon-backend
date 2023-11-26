@@ -1,6 +1,7 @@
+from django.utils.module_loading import autodiscover_modules
+
 from chameleon.step.mapping import registry as mapping_registry
 from chameleon.step.validation import registry as validation_registry
-from django.utils.module_loading import autodiscover_modules
 
 
 def autodiscover():

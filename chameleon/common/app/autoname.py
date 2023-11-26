@@ -1,4 +1,5 @@
 import typing
+
 from django.apps import AppConfig
 
 __all__ = ["AutonameAppConfig"]
