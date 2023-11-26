@@ -89,7 +89,7 @@ async def faulty_step_handler_unhandled(faulty_step: str, expect_exception: bool
     step_order: list[str] = []
 
     total_step_order = processing_step_order + response_step_order
-    exception_step: tuple[str]
+    exception_step: tuple[str, ...]
 
     if expect_exception:
         exception_step = (f"exception: {faulty_step}",)

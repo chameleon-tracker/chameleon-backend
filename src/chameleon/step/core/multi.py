@@ -8,8 +8,8 @@ __all__ = ("multi_processor_steps", "StepHandlerMulti", "StepsDefinitionDict")
 
 StepHandlerMulti = (
     core.StepHandlerProtocol
-    | typing.Sequence[core.StepHandlerProtocol]
-    | typing.Mapping[str, core.StepHandlerProtocol]
+    | typing.Sequence[core.StepHandlerProtocol | None]
+    | typing.Mapping[str, core.StepHandlerProtocol | None]
 )
 
 DEFAULT_SUFFIX = "_default"
@@ -92,7 +92,7 @@ def multi_dict_step(
 
 
 def list_step(
-    steps: typing.Sequence[core.StepHandlerProtocol],
+    steps: typing.Sequence[core.StepHandlerProtocol | None],
 ) -> core.StepHandlerProtocol | None:
     steps = tuple(filter(lambda step: step is not None, steps))
 
@@ -112,7 +112,7 @@ def list_step(
 
 def make_single_step(
     key: str,
-    step_definition: StepHandlerMulti,
+    step_definition: StepHandlerMulti | None,
     step_default: core.StepHandlerProtocol | None,
 ) -> core.StepHandlerProtocol | None:
     if step_definition is None:
@@ -135,7 +135,7 @@ def make_single_step(
 
 def ensure_single_step(
     key: str,
-    step_definition: StepHandlerMulti,
+    step_definition: StepHandlerMulti | None,
     defaults: typing.MutableMapping[str, typing.Any],
 ) -> core.StepHandlerProtocol | None:
     key_default = key + DEFAULT_SUFFIX

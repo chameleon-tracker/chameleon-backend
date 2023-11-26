@@ -371,7 +371,7 @@ def create_multi_step(
         case "dict":
             return step1, step2, {"test": step1, "test1": step2}
         case "list":
-            return step1, step2, [step1, step2]
+            return step1, step2, [step1]
         case "single":
             return step1, step2, step1
         case _:
