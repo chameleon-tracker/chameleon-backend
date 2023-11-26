@@ -5,8 +5,8 @@ from django import http
 from django.core.exceptions import ObjectDoesNotExist
 
 from chameleon.step import core
-from chameleon.step.impl import impl as default
-from chameleon.step.impl import jjson as json
+from chameleon.step.steps import steps_default as default
+from chameleon.step.steps import steps_json as json
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,6 @@
 import typing
 
-from chameleon.step.impl.registry import registry
-
 __all__ = (
-    "mapper_registry",
     "register_simple_mapping",
     "register_simple_mapping_dict",
     "register_simple_mapping_object",
@@ -12,9 +9,9 @@ __all__ = (
     "get_field_depth",
 )
 
-GetattrProtocol = typing.Callable[[typing.Any, str], typing.Any]
+from chameleon.step.mapping import registry
 
-mapper_registry = registry.ProcessorRegistry("mapper")
+GetattrProtocol = typing.Callable[[typing.Any, str], typing.Any]
 
 
 def register_simple_mapping(
@@ -55,7 +52,7 @@ def register_simple_mapping(
 
         return target_object_type(**kwargs)
 
-    mapper_registry.register(type_id=type_id, action_id=action_id, processor=mapping)
+    registry.register(type_id=type_id, action_id=action_id, processor=mapping)
 
 
 def register_simple_mapping_dict(
