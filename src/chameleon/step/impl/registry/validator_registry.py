@@ -1,9 +1,7 @@
 import functools
-import os.path
 import typing
 
 import jsonschema
-import yaml
 from referencing.jsonschema import SchemaRegistry
 
 from chameleon.step.impl.registry import registry as reg
@@ -13,13 +11,12 @@ __all__ = ("validator_registry",)
 
 validator_registry = reg.ProcessorRegistry("validator")
 schema_registry: SchemaRegistry = SchemaRegistry()
-validators: typing.MutableMapping[tuple[str, str | None], jsonschema.Validator]
+validators: typing.MutableMapping[tuple[str, str | None], jsonschema.Validator] = {}
 JsonValidator = jsonschema.Draft202012Validator
 
 
 def update_validators():
     """Update validators after schema_registry evolved."""
-
     for key, validator in list(validators.items()):
         validators[key] = validator.evolve(registry=schema_registry)
 

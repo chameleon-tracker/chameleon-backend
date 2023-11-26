@@ -1,3 +1,4 @@
+# ruff: noqa: F401
 from .mapper_registry import get_field_attr
 from .mapper_registry import get_field_depth
 from .mapper_registry import get_field_dict
