@@ -1,8 +1,7 @@
 from django.urls import re_path
 
-from chameleon.project.project import api
-
 # initialize mapping
+from chameleon.project.project import api
 from chameleon.project.project import mapping  # noqa
 from chameleon.step.framework import django
 
