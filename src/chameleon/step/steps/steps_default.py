@@ -3,10 +3,10 @@ import logging
 import typing
 
 from chameleon.step import core
-from chameleon.step.impl.jjson import deserialize_json
-from chameleon.step.impl.jjson import serialize_json
-from chameleon.step.impl.mapping import default_mapping
-from chameleon.step.impl.validation import default_validation
+from chameleon.step.steps.steps_json import default_deserialize_json
+from chameleon.step.steps.steps_json import default_serialize_json
+from chameleon.step.steps.mapping import default_mapping_steps
+from chameleon.step.steps.validation import default_validation_steps
 
 logger = logging.getLogger(__name__)
 
@@ -61,11 +61,11 @@ def default_json_steps(
 
     """
     json_data: core.StepsDefinitionDict = {
-        "deserialize_default": deserialize_json(loads=json_loads),
-        "serialize_default": serialize_json(dumps=json_dumps),
+        "deserialize_default": default_deserialize_json(loads=json_loads),
+        "serialize_default": default_serialize_json(dumps=json_dumps),
     }
 
-    mapping = default_mapping(
+    mapping = default_mapping_steps(
         type_id=type_id,
         action_id_input=action_id_input,
         action_id_output=action_id_output,
@@ -74,7 +74,7 @@ def default_json_steps(
         mapping_check_runtime=mapping_check_runtime,
     )
 
-    validation = default_validation(
+    validation = default_validation_steps(
         type_id=type_id,
         action_id_input=action_id_input,
     )

@@ -1,3 +1,4 @@
+import functools
 import logging
 import os.path
 import pathlib
@@ -9,25 +10,48 @@ import yaml
 from jsonschema.protocols import Validator
 from referencing.jsonschema import SchemaRegistry
 
+from chameleon.step.validation import registry
+
 # Default validator used in the app
-DEFAULT_JSON_VALIDATOR = jsonschema.Draft202012Validator
+type DefaultJsonMapping = jsonschema.Draft202012Validator
 # Schema registry is id to schema registry
-schema_registry: SchemaRegistry = SchemaRegistry()
+default_schema_registry: SchemaRegistry = SchemaRegistry()
 # Schema validators registered for type_id and action_id
 validators: typing.MutableMapping[tuple[str, str | None], Validator] = {}
 
 logger = logging.getLogger(__name__)
 
 
+def register_jsonschema_validation(
+    *,
+    ref: str,
+    type_id: str,
+    action_id: str | None = None,
+):
+    key = (type_id, action_id)
+    create_validator(ref=ref, type_id=type_id, action_id=action_id)
+
+    registry.register(
+        type_id=type_id,
+        action_id=action_id,
+        processor=functools.partial(json_validation_processor, key=key),
+    )
+
+
 def create_validator(
-    *, ref: str, type_id: str, action_id: str | None = None, registry=schema_registry
+    *,
+    ref: str,
+    type_id: str,
+    action_id: str | None = None,
+    schema_registry: SchemaRegistry = default_schema_registry,
 ):
     """Create JSON Schema Validator for given reference and cache it."""
     key = (type_id, action_id)
     if key not in validators:
-        loader.validators[key] = loader.DEFAULT_JSON_VALIDATOR(  # noqa
-            schema={"$ref": ref}, registry=registry
-        )
+        validators[key] = DefaultJsonMapping(
+            schema={"$ref": ref},
+            format_checker=DefaultJsonMapping.FORMAT_CHECKER,
+        ).evolve(registry=schema_registry)
 
 
 async def json_validation_processor(value: typing.Any, *, key: tuple[str, str | None]):
@@ -38,33 +62,33 @@ async def json_validation_processor(value: typing.Any, *, key: tuple[str, str | 
 def load_schemas(
     paths: typing.Sequence[str | pathlib.Path],
     aliases: typing.Mapping[str, str],
-    registry=schema_registry,
+    schema_registry=default_schema_registry,
 ):
     """Load schemas from given paths and apply aliases to them.
 
     Args:
         paths: Paths to read schema files from.
         aliases: Schema id aliases to use.
-        registry: Base registry to use to evolve.
+        schema_registry: Base registry to use to evolve.
     """
-    known_schema_ids = set(registry)  # it's iterable
-    registry = registry.with_resources(
+    known_schema_ids = set(schema_registry)  # it's iterable
+    schema_registry = schema_registry.with_resources(
         obtain_schema_data(paths, aliases, known_schema_ids)
     ).crawl()
 
-    update_validators(registry=registry)
-    return registry
+    update_validators(schema_registry=schema_registry)
+    return schema_registry
 
 
-def update_validators(*, registry=schema_registry):
+def update_validators(*, schema_registry=default_schema_registry):
     """Update validators using new registry.
 
     Args:
-        registry: Registry to use for new validators.
+        schema_registry: Registry to use for new validators.
     """
 
     for key, validator in list(validators.items()):
-        validators[key] = validator.evolve(registry=registry)
+        validators[key] = validator.evolve(registry=schema_registry)
 
 
 def obtain_schema_data(
@@ -87,7 +111,7 @@ def obtain_schema_data(
 
 def read_files(
     paths: typing.Sequence[str | pathlib.Path],
-) -> typing.Iterator[tuple[str | pathlib.Path, str | pathlib.Path, typing.Any]]:
+) -> typing.Iterator[tuple[str | pathlib.Path, str, typing.Any]]:
     """Read json and yaml files from given paths.
 
     Args:
@@ -101,7 +125,7 @@ def read_files(
 
 def process_schema(
     base: str | pathlib.Path | None,
-    filename: str | pathlib.Path | None,
+    filename: str | None,
     schema_data: typing.Any,
     aliases: typing.Mapping[str, str],
     known_schema_ids: typing.MutableSet[str],
@@ -150,14 +174,14 @@ def check_schema(filename: str | None, raw_data: typing.Any) -> bool:
         or not isinstance(raw_data["$id"], str)
     ):
         logger.warning(
-            "Given schema doesn't contain an $id. "
+            "Given schema doesn't contain $id key. "
             "It's impossible to identify such schemas. Skipping"
         )
         return False
 
-    schema_id: str = raw_data.get("$id")
+    schema_id: str | None = raw_data.get("$id")
     try:
-        DEFAULT_JSON_VALIDATOR.check_schema(raw_data)
+        DefaultJsonMapping.check_schema(raw_data)
         return True
     except jsonschema.SchemaError as e:
         # TODO: Should be there double logging for a single schema
@@ -165,12 +189,14 @@ def check_schema(filename: str | None, raw_data: typing.Any) -> bool:
 
         if filename:
             logger.warning(
-                f"Schema from file {filename!r}: not a valid schema. Skipping",
+                "Schema from file %s: not a valid schema. Skipping",
+                repr(filename),
                 exc_info=e,
             )
         if schema_id:
             logger.warning(
-                f"Schema with id {schema_id!r}: not a valid schema. Skipping",
+                "Schema with id %s: not a valid schema. Skipping",
+                repr(schema_id),
                 exc_info=e,
             )
         return False
@@ -178,10 +204,10 @@ def check_schema(filename: str | None, raw_data: typing.Any) -> bool:
 
 def obtain_schema_ids(
     schema_data: typing.Mapping[str, typing.Any],
-    base: str | None,
+    base: str | pathlib.Path | None,
     filename: str | None,
     aliases: typing.Mapping[str, str],
-) -> typing.Iterator[str]:
+) -> typing.Iterator[str | None]:
     """Obtain possible schema ids
 
     Args:
@@ -191,11 +217,12 @@ def obtain_schema_ids(
         aliases: User defined aliases. Could be aliases to filename or ids
     """
     if filename and base:
-        rel = os.path.relpath(filename, base)
+        rel: str = os.path.relpath(filename, base)
         yield rel
         yield aliases.get(rel)
 
-    schema_id = schema_data.get("$id")
+    # TODO: It could be .pop() depending on how internals of SchemaRegistry work
+    schema_id: str | None = str(schema_data.get("$id"))
     yield schema_id
     yield aliases.get(schema_id)
 
@@ -213,7 +240,7 @@ def is_json_or_yaml(filename: str):
     return False
 
 
-def list_files(paths: typing.Sequence[str]):
+def list_files(paths: typing.Sequence[str | pathlib.Path]):
     """Lists all files from paths.
 
     If element is a file, return it.
@@ -226,7 +253,7 @@ def list_files(paths: typing.Sequence[str]):
         if not os.path.exists(path):
             raise ValueError(f"Path {path!r} doesn't exists")
 
-        if os.path.isfile(path) and is_json_or_yaml(path):
+        if os.path.isfile(path) and is_json_or_yaml(str(path)):
             yield os.path.dirname(path), path
             continue
 

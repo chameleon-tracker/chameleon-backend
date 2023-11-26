@@ -4,9 +4,9 @@ import functools
 import typing
 
 from chameleon.step import core
-from chameleon.step import registry
+from chameleon.step import mapping
 
-__all__ = ("default_mapping",)
+__all__ = ("default_mapping_steps",)
 
 
 def mapper_get_input(context: core.StepContext, is_input: bool):
@@ -39,7 +39,7 @@ async def mapper_handler_runtime(
     context: core.StepContext, *, mapping_context: MappingContext
 ):
     input_value = mapper_get_input(context, mapping_context.is_input)
-    mapper_function = registry.mapper_registry.get(
+    mapper_function = mapping.registry.get(
         mapping_context.type_id, mapping_context.action_id
     )
 
@@ -51,36 +51,36 @@ async def mapper_handler_runtime(
     else:
         output_value = mapper_function(input_value)
 
-        mapping_set_output(context, output_value, mapping_context.is_input)
+    mapping_set_output(context, output_value, mapping_context.is_input)
 
 
 async def mapper_handler_single_input(
-    context: core.StepContext, *, mapping_function: registry.ProcessorProtocol
+    context: core.StepContext, *, mapping_function: core.ProcessorProtocol
 ):
     context.input_business = mapping_function(context.input_raw)
 
 
 async def mapper_handler_single_output(
-    context: core.StepContext, *, mapping_function: registry.ProcessorProtocol
+    context: core.StepContext, *, mapping_function: core.ProcessorProtocol
 ):
     context.output_raw = mapping_function(context.output_business)
 
 
 async def mapper_handler_list_input(
-    context: core.StepContext, *, mapping_function: registry.ProcessorProtocol
+    context: core.StepContext, *, mapping_function: core.ProcessorProtocol
 ):
     context.input_business = list(map(mapping_function, context.input_raw))
 
 
 async def mapper_handler_list_output(
-    context: core.StepContext, *, mapping_function: registry.ProcessorProtocol
+    context: core.StepContext, *, mapping_function: core.ProcessorProtocol
 ):
     context.output_raw = list(map(mapping_function, context.output_business))
 
 
 class MapperHandlerProtocol(typing.Protocol):
     async def __call__(
-        self, context: core.StepContext, *, mapping_function: registry.ProcessorProtocol
+        self, context: core.StepContext, *, mapping_function: core.ProcessorProtocol
     ):
         ...
 
@@ -114,9 +114,7 @@ def generic_mapper_handler(
             mapper_handler_runtime, mapping_context=mapping_context
         )
 
-    mapping_function = registry.mapper_registry.get(
-        type_id=type_id, action_id=action_id
-    )
+    mapping_function = mapping.registry.get(type_id=type_id, action_id=action_id)
 
     if mapping_function is None:
         return None
@@ -128,7 +126,7 @@ def generic_mapper_handler(
     return functools.partial(mapping_step_handler, mapping_function=mapping_function)
 
 
-def default_mapping(
+def default_mapping_steps(
     *,
     type_id: str | None = None,
     action_id_input: str | None = "input",

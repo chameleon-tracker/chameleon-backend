@@ -1,5 +1,5 @@
 from chameleon.step import core
-from chameleon.step.registry import validators_registry
+from chameleon.step import validation
 
 __all__ = ("default_validation_steps",)
 
@@ -9,7 +9,7 @@ def generic_validation_step(
 ) -> core.StepHandlerProtocol:
     async def validation_step(context: core.StepContext):
         value = context.input_raw
-        validator_function = validators_registry.get(type_id, action_id)
+        validator_function = validation.registry.get(type_id, action_id)
         if validator_function is not None:
             validator_function(value)
 
