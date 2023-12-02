@@ -6,6 +6,9 @@ from django.db import models
 class PrintableModel(models.Model):
     """Generate printable version of a model."""
 
+    class Meta:
+        abstract = True
+
     def __repr__(self):
         return str(self.to_dict())
 
@@ -27,6 +30,9 @@ class PrintableModel(models.Model):
 
 class UpdatableModel(models.Model):
     """Add update method from dict to a model."""
+
+    class Meta:
+        abstract = True
 
     async def update(self, commit: bool = False, /, **kwargs):
         """Update model from a dict.
