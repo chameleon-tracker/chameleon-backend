@@ -5,3 +5,6 @@ __pycache__/
 .venv/
 .env
 .ipynb_checkpoints
+*.db
+*.sqlite
+*.sqlite3

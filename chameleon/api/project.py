@@ -1,14 +1,12 @@
 import logging
 
 from django.urls import re_path
+from referencing.exceptions import Unresolvable
 
 from chameleon.project.project import api
-
 from chameleon.step import core
 from chameleon.step.framework import steps_django as django
 from chameleon.step.steps.validation import ValidationError
-
-from referencing.exceptions import Unresolvable
 
 logger = logging.getLogger(__name__)
 
