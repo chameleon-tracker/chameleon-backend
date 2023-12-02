@@ -1,5 +1,6 @@
 import dataclasses
 import typing
+from collections import abc
 
 from chameleon.step.core import context as ctx
 from chameleon.step.core.doc import create_field
@@ -125,17 +126,17 @@ class UrlHandlerSteps(UrlHandlerProcessSteps):
 
 
 def defined_steps(
-    steps: typing.Sequence[tuple[str, StepHandlerProtocol | None]]
-) -> typing.Iterable[tuple[str, StepHandlerProtocol]]:
+    steps: abc.Sequence[tuple[str, StepHandlerProtocol | None]]
+) -> abc.Iterable[tuple[str, StepHandlerProtocol]]:
     return filter(lambda step: step[1] is not None, steps)
 
 
 class UrlHandler:
     steps: UrlHandlerSteps
-    error_status_to_http: typing.Mapping[int, int]
+    error_status_to_http: abc.Mapping[int, int]
 
     def __init__(
-        self, *, steps: UrlHandlerSteps, error_status_to_http: typing.Mapping[int, int]
+        self, *, steps: UrlHandlerSteps, error_status_to_http: abc.Mapping[int, int]
     ):
         self.steps = steps
         self.error_status_to_http = error_status_to_http

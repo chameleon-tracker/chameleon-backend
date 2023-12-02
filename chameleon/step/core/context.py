@@ -1,5 +1,6 @@
 import dataclasses
 import typing
+from collections import abc
 
 from chameleon.step.core.doc import create_field
 
@@ -55,7 +56,7 @@ class StepContext:
         default=0,
     )
 
-    error_status_to_http: typing.Mapping[int, int] = create_field(
+    error_status_to_http: abc.Mapping[int, int] = create_field(
         doc="""Mapping from Application Errors to HTTP errors.""",
         default=dataclasses.MISSING,
     )
@@ -64,12 +65,12 @@ class StepContext:
 
     response_body: bytes = create_field(doc="""Serialized response body.""")
 
-    response_headers: typing.MutableMapping[str, str] = create_field(
+    response_headers: abc.MutableMapping[str, str] = create_field(
         doc="""Additional response headers."""
     )
 
     response: typing.Any = create_field(doc="""Final response object.""")
 
-    custom_info: typing.MutableMapping[str, typing.Any] = create_field(
+    custom_info: abc.MutableMapping[str, typing.Any] = create_field(
         doc="""Custom information if needed."""
     )

@@ -9,9 +9,11 @@ __all__ = (
     "get_field_depth",
 )
 
+from collections import abc
+
 from chameleon.step.mapping import registry
 
-GetattrProtocol = typing.Callable[[typing.Any, str], typing.Any]
+GetattrProtocol = abc.Callable[[typing.Any, str], typing.Any]
 
 
 def register_simple_mapping(
@@ -21,8 +23,8 @@ def register_simple_mapping(
     target_object_type: typing.Any,
     get_field_fun: GetattrProtocol,
     include_none=False,
-    fields: typing.Sequence[str] | None = None,
-    custom_mapping: typing.Mapping[str, str] | None = None,
+    fields: abc.Sequence[str] | None = None,
+    custom_mapping: abc.Mapping[str, str] | None = None,
 ):
     """Register simple mapping function.
 
@@ -61,8 +63,8 @@ def register_simple_mapping_dict(
     action_id: str | None = None,
     target_object_type,
     include_none=False,
-    fields: typing.Sequence[str] | None = None,
-    custom_mapping: typing.Mapping[str, str] | None = None,
+    fields: abc.Sequence[str] | None = None,
+    custom_mapping: abc.Mapping[str, str] | None = None,
 ):
     register_simple_mapping(
         type_id=type_id,
@@ -81,8 +83,8 @@ def register_simple_mapping_object(
     action_id: str | None = None,
     target_object_type,
     include_none=False,
-    fields: typing.Sequence[str] | None = None,
-    custom_mapping: typing.Mapping[str, str] | None = None,
+    fields: abc.Sequence[str] | None = None,
+    custom_mapping: abc.Mapping[str, str] | None = None,
 ):
     register_simple_mapping(
         type_id=type_id,

@@ -2,6 +2,7 @@ import itertools
 import secrets
 import typing
 import uuid
+from collections import abc
 
 import pytest
 
@@ -117,8 +118,8 @@ def step_handler_generator(
     expected_step: str,
     step_order_collect: list[str],
     request_obj: typing.Any,
-    error_code_mapping: typing.Mapping[int, int],
-    expected_custom_info: typing.Mapping[str, typing.Any],
+    error_code_mapping: abc.Mapping[int, int],
+    expected_custom_info: abc.Mapping[str, typing.Any],
     faulty: bool,
     exception: bool,
     exception_handled: bool = True,

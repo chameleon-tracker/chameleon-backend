@@ -1,5 +1,6 @@
 import dataclasses
 import typing
+from collections import abc
 
 from chameleon.step.core import context as ctx
 from chameleon.step.core import core
@@ -8,8 +9,8 @@ __all__ = ("multi_processor_steps", "StepHandlerMulti", "StepsDefinitionDict")
 
 StepHandlerMulti = (
     core.StepHandlerProtocol
-    | typing.Sequence[core.StepHandlerProtocol | None]
-    | typing.Mapping[str, core.StepHandlerProtocol | None]
+    | abc.Sequence[core.StepHandlerProtocol | None]
+    | abc.Mapping[str, core.StepHandlerProtocol | None]
 )
 
 DEFAULT_SUFFIX = "_default"
@@ -57,13 +58,13 @@ class StepsDefinitionDict(typing.TypedDict, total=False):
 T = typing.TypeVar("T")
 
 
-def clean_values(source: typing.Mapping[str, T | None]) -> typing.Mapping[str, T]:
+def clean_values(source: abc.Mapping[str, T | None]) -> abc.Mapping[str, T]:
     return {key: value for key, value in source.items() if value is not None}
 
 
 def multi_dict_step(
     default_handler: core.StepHandlerProtocol | None,
-    steps_by_name: typing.Mapping[str, core.StepHandlerProtocol | None],
+    steps_by_name: abc.Mapping[str, core.StepHandlerProtocol | None],
 ) -> core.StepHandlerProtocol | None:
     steps = clean_values(steps_by_name)
 
@@ -88,7 +89,7 @@ def multi_dict_step(
 
 
 def list_step(
-    steps: typing.Sequence[core.StepHandlerProtocol | None],
+    steps: abc.Sequence[core.StepHandlerProtocol | None],
 ) -> core.StepHandlerProtocol | None:
     steps = tuple(filter(lambda step: step is not None, steps))
 
@@ -119,11 +120,11 @@ def make_single_step(
         return step_definition
 
     # step is a sequence, ignoring default
-    if isinstance(step_definition, typing.Sequence):
+    if isinstance(step_definition, abc.Sequence):
         return list_step(step_definition)
 
     # step is mapping, e.g. exception handler using default
-    if isinstance(step_definition, typing.Mapping):
+    if isinstance(step_definition, abc.Mapping):
         return multi_dict_step(step_default, step_definition)
 
     raise ValueError(f"Step {key} has unknown type: {step_definition!r}")
@@ -132,7 +133,7 @@ def make_single_step(
 def ensure_single_step(
     key: str,
     step_definition: StepHandlerMulti | None,
-    defaults: typing.MutableMapping[str, typing.Any],
+    defaults: abc.MutableMapping[str, typing.Any],
 ) -> core.StepHandlerProtocol | None:
     key_default = key + DEFAULT_SUFFIX
     step_default = make_single_step(key_default, defaults.pop(key_default, None), None)
@@ -143,8 +144,8 @@ def ensure_single_step(
 
 def prepare_multi_handler_steps(
     kwargs: StepsDefinitionDict,
-) -> typing.Mapping[str, core.StepHandlerProtocol]:
-    defaults: typing.MutableMapping[str, core.StepHandlerProtocol] = {}
+) -> abc.Mapping[str, core.StepHandlerProtocol]:
+    defaults: abc.MutableMapping[str, core.StepHandlerProtocol] = {}
 
     # Extract all default handlers from kwargs to defaults dict
     for key in list(kwargs.keys()):

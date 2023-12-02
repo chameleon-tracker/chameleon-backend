@@ -1,6 +1,7 @@
 import json
 import logging
 import typing
+from collections import abc
 
 from chameleon.step import core
 from chameleon.step.steps.mapping import default_mapping_steps
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 __all__ = ("default_json_steps", "DefaultJsonSteps")
 
-JsonParserProtocol = typing.Callable[[bytes], typing.Any]
+JsonParserProtocol = abc.Callable[[bytes], typing.Any]
 
 
 class DefaultJsonSteps(typing.TypedDict, total=False):
