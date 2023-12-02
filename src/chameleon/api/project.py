@@ -2,15 +2,10 @@ import logging
 
 from django.urls import re_path
 
-# initialize mapping
 from chameleon.project.project import api
 
-# TODO: Extend Django App initialization to handle this auto-magically
-from chameleon.project.project import mapping  # noqa
-from chameleon.project.project import validation  # noqa
-
 from chameleon.step import core
-from chameleon.step.framework import django
+from chameleon.step.framework import steps_django as django
 from chameleon.step.steps.validation import ValidationError
 
 from referencing.exceptions import Unresolvable

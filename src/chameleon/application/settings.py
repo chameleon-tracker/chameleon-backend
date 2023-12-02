@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+SCHEMAS_PATHS = BASE_DIR.parent.parent / "schemas"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -27,7 +27,9 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = [
+    "chameleon.application",  # Schema and schema-based things
     "chameleon.project.project",
+    "chameleon.step.framework.django",
     "django.contrib.contenttypes",
 ]
 
@@ -84,8 +86,3 @@ LOGGING = {
         "level": "INFO",
     },
 }
-
-# TODO: extend Django app to do the thing
-from chameleon.step.validation import jsonschema
-
-jsonschema.load_schemas(paths=(BASE_DIR.parent.parent / "schemas",))

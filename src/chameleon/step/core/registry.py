@@ -13,11 +13,11 @@ class ProcessorProtocol(typing.Protocol):
 
 
 class ProcessorRegistry:
-    registry: typing.MutableMapping[str, ProcessorProtocol]
+    _registry: typing.MutableMapping[str, ProcessorProtocol]
     name: str
 
     def __init__(self, name: str):
-        self.registry = {}
+        self._registry = {}
         self.name = name
 
     def register(
@@ -39,15 +39,15 @@ class ProcessorRegistry:
 
         processor_id = _processor_id(type_id, action_id)
 
-        if processor_id in self.registry:
+        if processor_id in self._registry:
             raise ValueError(
                 f"{self.name.capitalize()} registry already contains {processor_id!r}"
             )
 
-        self.registry[processor_id] = processor
+        self._registry[processor_id] = processor
 
     def __getitem__(self, item):
-        return self.registry[item]
+        return self._registry[item]
 
     def get(
         self,
@@ -56,7 +56,7 @@ class ProcessorRegistry:
         default: ProcessorProtocol = None,
     ):
         processor_id = _processor_id(type_id, action_id)
-        return self.registry.get(processor_id, default)
+        return self._registry.get(processor_id, default)
 
 
 def _processor_id(type_id: str, action_id: str | None = None):
