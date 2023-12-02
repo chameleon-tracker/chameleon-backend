@@ -1,5 +1,5 @@
 import dataclasses
-import typing
+from collections import abc
 from unittest import mock
 
 import pytest
@@ -88,7 +88,7 @@ async def test_multi_dict_step(
 async def test_multi_dict_step_default(
     *,
     default_params: StepParams,
-    steps_by_name: typing.Mapping[str, core.StepHandlerProtocol | None],
+    steps_by_name: abc.Mapping[str, core.StepHandlerProtocol | None],
 ):
     """Test default without custom steps defined.
 

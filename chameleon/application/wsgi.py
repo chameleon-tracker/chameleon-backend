@@ -1,5 +1,4 @@
-"""
-WSGI config for chameleon project.
+"""WSGI config for chameleon project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

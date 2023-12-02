@@ -1,5 +1,6 @@
 import logging
 import typing
+from collections import abc
 
 from django import http
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,7 +16,7 @@ __all__ = ("method_dispatcher", "django_json_steps")
 
 def method_dispatcher(
     *,
-    error_status_to_http: typing.Mapping[int, int] | None = None,
+    error_status_to_http: abc.Mapping[int, int] | None = None,
     **kwargs: core.StepsDefinitionDict,
 ):
     async def invalid_method(*_args, **_kwargs):
@@ -37,10 +38,13 @@ async def django_fill_request_info(context: core.StepContext):
     context.request_info.content_encoding = request.encoding
 
 
+HTTP_METHODS_WITH_INPUT = {"POST", "PUT"}
+
+
 async def extract_body(context: core.StepContext):
     request_method = context.request_info.method
 
-    if request_method in ("POST", "PUT"):
+    if request_method in HTTP_METHODS_WITH_INPUT:
         context.request_body = context.request_info.request.body
 
 
@@ -86,7 +90,7 @@ class DjangoParams(core.StepsDefinitionDict, default.DefaultJsonSteps):
 
 
 def django_json_steps(
-    exception_handler_map: typing.Mapping[str, core.StepHandlerProtocol] | None = None,
+    exception_handler_map: abc.Mapping[str, core.StepHandlerProtocol] | None = None,
     **kwargs: typing.Unpack[DjangoParams],
 ) -> core.StepsDefinitionDict:
     exception_handler = kwargs.get("exception_handler_default")
@@ -103,7 +107,7 @@ def django_json_steps(
             exception_handler = {}
 
         if (
-            isinstance(exception_handler, typing.MutableMapping)
+            isinstance(exception_handler, abc.MutableMapping)
             and "business" not in exception_handler
         ):
             exception_handler["business"] = generic_business_error_handler

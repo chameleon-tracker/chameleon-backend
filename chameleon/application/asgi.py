@@ -1,5 +1,4 @@
-"""
-ASGI config for chameleon project.
+"""ASGI config for chameleon project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

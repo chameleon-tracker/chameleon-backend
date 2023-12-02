@@ -1,5 +1,6 @@
 import logging
 import typing
+from collections import abc
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class ProcessorProtocol(typing.Protocol):
 
 
 class ProcessorRegistry:
-    _registry: typing.MutableMapping[str, ProcessorProtocol]
+    _registry: abc.MutableMapping[str, ProcessorProtocol]
     name: str
 
     def __init__(self, name: str):

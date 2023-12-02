@@ -1,4 +1,5 @@
 import typing
+from collections import abc
 
 from django.db.models import enums
 from django.db.models import fields
@@ -10,7 +11,7 @@ __all__ = ["choice_field", "markup_field"]
 Choices = typing.TypeVar("Choices", bound=enums.Choices)
 
 
-def set_kwargs_value(target: typing.MutableMapping[str, typing.Any], **kwargs):
+def set_kwargs_value(target: abc.MutableMapping[str, typing.Any], **kwargs):
     """Set value with validation that this value isn't specified twice.
 
     Args:
@@ -28,7 +29,7 @@ def set_kwargs_value(target: typing.MutableMapping[str, typing.Any], **kwargs):
             target[key] = value
 
 
-def set_kwargs_default(target: typing.MutableMapping[str, typing.Any], **kwargs):
+def set_kwargs_default(target: abc.MutableMapping[str, typing.Any], **kwargs):
     """Set value if it isn't already defined."""
     for key, value in kwargs.items():
         if key not in target:
@@ -84,6 +85,7 @@ def markup_field(model_field: str | None = None) -> fields.Field:
         help_text = f"{model_field} markup language"
     else:
         help_text = None
+
     return choice_field(
         MarkupLanguages,
         MarkupLanguages.PLAIN,

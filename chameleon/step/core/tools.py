@@ -1,4 +1,5 @@
 import typing
+from collections import abc
 
 from chameleon.step.core import core
 from chameleon.step.core import multi
@@ -14,7 +15,7 @@ class InvalidHandlerProtocol(typing.Protocol):
 def method_dispatcher(
     *,
     invalid_method: InvalidHandlerProtocol,
-    error_status_to_http: typing.Mapping[int, int] | None = None,
+    error_status_to_http: abc.Mapping[int, int] | None = None,
     **kwargs: multi.StepsDefinitionDict,
 ):
     error_status_to_http = error_status_to_http or {}

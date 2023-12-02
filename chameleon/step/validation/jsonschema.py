@@ -3,6 +3,7 @@ import logging
 import os.path
 import pathlib
 import typing
+from collections import abc
 
 import jsonschema
 import referencing
@@ -18,9 +19,10 @@ DefaultJsonMapping = jsonschema.Draft202012Validator
 # Schema registry is id to schema registry
 default_schema_registry: SchemaRegistry = SchemaRegistry()
 # Schema validators registered for type_id and action_id
-validators: typing.MutableMapping[tuple[str, str | None], Validator] = {}
+validators: abc.MutableMapping[tuple[str, str | None], Validator] = {}
 
 logger = logging.getLogger(__name__)
+JSON_EXTENSIONS = (".json", ".yml", ".yaml")
 
 
 def register_jsonschema_validation(
@@ -32,11 +34,7 @@ def register_jsonschema_validation(
 ):
     key = (type_id, action_id)
 
-    schema_registry_work: SchemaRegistry
-    if schema_registry is None:
-        schema_registry_work = default_schema_registry
-    else:
-        schema_registry_work = schema_registry
+    schema_registry_work: SchemaRegistry = guess_schema_registry(schema_registry)
 
     create_validator(
         ref=ref,
@@ -57,16 +55,18 @@ def create_validator(
     ref: str,
     type_id: str,
     action_id: str | None = None,
-    schema_registry: SchemaRegistry = default_schema_registry,
+    schema_registry: SchemaRegistry = None,
 ):
     """Create JSON Schema Validator for given reference and cache it."""
+
+    schema_registry_work = guess_schema_registry(schema_registry)
     key = (type_id, action_id)
     if key not in validators:
         # noinspection PyTypeChecker
         validators[key] = DefaultJsonMapping(
             schema={"$ref": ref},
             format_checker=DefaultJsonMapping.FORMAT_CHECKER,
-            registry=schema_registry,
+            registry=schema_registry_work,
         )
 
 
@@ -76,8 +76,8 @@ def json_validation_processor(value: typing.Any, *, key: tuple[str, str | None])
 
 
 def load_schemas(
-    paths: typing.Sequence[str | pathlib.Path] | str | pathlib.Path,
-    aliases: typing.Mapping[str, str] | None = None,
+    paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
+    aliases: abc.Mapping[str, str] | None = None,
     schema_registry: SchemaRegistry = None,
 ):
     """Load schemas from given paths and apply aliases to them.
@@ -87,13 +87,9 @@ def load_schemas(
         aliases: Schema id aliases to use.
         schema_registry: Base registry to use to evolve.
     """
-    global default_schema_registry
+    global default_schema_registry  # pylint: disable=global-statement
 
-    schema_registry_work: SchemaRegistry
-    if schema_registry is None:
-        schema_registry_work = default_schema_registry
-    else:
-        schema_registry_work = schema_registry
+    schema_registry_work = guess_schema_registry(schema_registry)
 
     known_schema_ids = set(schema_registry_work)  # it's iterable
 
@@ -110,22 +106,31 @@ def load_schemas(
     return schema_registry_work
 
 
-def update_validators(*, schema_registry=default_schema_registry):
+def update_validators(*, schema_registry: SchemaRegistry | None = None):
     """Update validators using new registry.
 
     Args:
         schema_registry: Registry to use for new validators.
     """
 
+    schema_registry_work = guess_schema_registry(schema_registry)
     for key, validator in list(validators.items()):
-        validators[key] = validator.evolve(registry=schema_registry)
+        validators[key] = validator.evolve(registry=schema_registry_work)
+
+
+def guess_schema_registry(schema_registry: SchemaRegistry | None) -> SchemaRegistry:
+    if schema_registry is None:
+        schema_registry_work = default_schema_registry
+    else:
+        schema_registry_work = schema_registry
+    return schema_registry_work
 
 
 def obtain_schema_data(
-    paths: typing.Sequence[str | pathlib.Path],
-    aliases: typing.Mapping[str, str],
-    known_schema_ids: typing.Set[str],
-) -> typing.Iterator[tuple[str, referencing.Resource]]:
+    paths: abc.Sequence[str | pathlib.Path],
+    aliases: abc.Mapping[str, str],
+    known_schema_ids: abc.Set[str],
+) -> abc.Iterator[tuple[str, referencing.Resource]]:
     """Read and filter out schema files and return.
 
     Args:
@@ -140,8 +145,8 @@ def obtain_schema_data(
 
 
 def read_files(
-    paths: typing.Sequence[str | pathlib.Path] | str | pathlib.Path,
-) -> typing.Iterator[tuple[str | pathlib.Path, str, typing.Any]]:
+    paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
+) -> abc.Iterator[tuple[str | pathlib.Path, str, typing.Any]]:
     """Read json and yaml files from given paths.
 
     Args:
@@ -157,9 +162,9 @@ def process_schema(
     base: str | pathlib.Path | None,
     filename: str | None,
     schema_data: typing.Any,
-    aliases: typing.Mapping[str, str],
-    known_schema_ids: typing.MutableSet[str],
-) -> typing.Iterator[tuple[str, referencing.Resource]]:
+    aliases: abc.Mapping[str, str],
+    known_schema_ids: abc.MutableSet[str],
+) -> abc.Iterator[tuple[str, referencing.Resource]]:
     """Check schema data and return mapping id to a resource.
 
     Args:
@@ -195,7 +200,7 @@ def check_schema(filename: str | None, raw_data: typing.Any) -> bool:
         filename: Filename to log information about in case of an error.
         raw_data: Schema raw data read from file.
     """
-    if not isinstance(raw_data, typing.Mapping) or not isinstance(
+    if not isinstance(raw_data, abc.Mapping) or not isinstance(
         raw_data.get("$schema"), str
     ):
         return False
@@ -235,11 +240,11 @@ def check_schema(filename: str | None, raw_data: typing.Any) -> bool:
 
 
 def obtain_schema_ids(
-    schema_data: typing.Mapping[str, typing.Any],
+    schema_data: abc.Mapping[str, typing.Any],
     base: str | pathlib.Path | None,
     filename: str | None,
-    aliases: typing.Mapping[str, str],
-) -> typing.Iterator[str | None]:
+    aliases: abc.Mapping[str, str],
+) -> abc.Iterator[str | None]:
     """Obtain possible schema ids
 
     Args:
@@ -265,14 +270,10 @@ def is_json_or_yaml(filename: str):
     Args:
         filename: filename to check
     """
-
-    for ext in (".json", ".yml", ".yaml"):
-        if filename.endswith(ext):
-            return True
-    return False
+    return any(filename.endswith(ext) for ext in JSON_EXTENSIONS)
 
 
-def list_files(paths: typing.Sequence[str | pathlib.Path] | str | pathlib.Path):
+def list_files(paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path):
     """Lists all files from paths.
 
     If element is a file, return it.
@@ -281,7 +282,7 @@ def list_files(paths: typing.Sequence[str | pathlib.Path] | str | pathlib.Path):
     Args:
         paths: list of paths.
     """
-    paths_iter: typing.Sequence[str | pathlib.Path]
+    paths_iter: abc.Sequence[str | pathlib.Path]
     if isinstance(paths, (str, pathlib.Path)):
         paths_iter = [paths]
     else:
