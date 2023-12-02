@@ -49,9 +49,14 @@ class ProcessorRegistry:
     def __getitem__(self, item):
         return self.registry[item]
 
-    def get(self, type_id: str, action_id: str | None = None):
+    def get(
+        self,
+        type_id: str,
+        action_id: str | None = None,
+        default: ProcessorProtocol = None,
+    ):
         processor_id = _processor_id(type_id, action_id)
-        return self.registry.get(processor_id)
+        return self.registry.get(processor_id, default)
 
 
 def _processor_id(type_id: str, action_id: str | None = None):
