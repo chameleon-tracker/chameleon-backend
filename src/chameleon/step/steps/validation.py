@@ -1,7 +1,17 @@
+import typing
+
 from chameleon.step import core
 from chameleon.step import validation
 
-__all__ = ("default_validation_steps",)
+__all__ = ("default_validation_steps", "ValidationError")
+
+
+def noop_validator(_value: typing.Any):
+    ...
+
+
+class ValidationError(ValueError):
+    ...
 
 
 def generic_validation_step(
@@ -9,9 +19,10 @@ def generic_validation_step(
 ) -> core.StepHandlerProtocol:
     async def validation_step(context: core.StepContext):
         value = context.input_raw
-        validator_function = validation.registry.get(type_id, action_id)
-        if validator_function is not None:
-            validator_function(value)
+        validator_function = validation.registry.get(type_id, action_id, noop_validator)
+        result = validator_function(value)
+        if result:
+            raise ValidationError(result)
 
     return validation_step
 

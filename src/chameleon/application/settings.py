@@ -60,6 +60,7 @@ APPEND_SLASH = False
 # Temporary solution to show SQL on console
 LOGGING = {
     "version": 1,
+    "disable_existing_loggers": False,
     "filters": {
         "require_debug_true": {
             "()": "django.utils.log.RequireDebugTrue",
@@ -78,4 +79,13 @@ LOGGING = {
             "handlers": ["console"],
         }
     },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
 }
+
+# TODO: extend Django app to do the thing
+from chameleon.step.validation import jsonschema
+
+jsonschema.load_schemas(paths=(BASE_DIR.parent.parent / "schemas",))
