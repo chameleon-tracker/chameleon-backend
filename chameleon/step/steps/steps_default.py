@@ -37,9 +37,7 @@ def default_json_steps(
     mapping_check_runtime: bool = False,
     **kwargs: typing.Unpack[core.StepsDefinitionDict],
 ) -> core.StepsDefinitionDict:
-    """
-    Sets default steps for JSON processing.
-    This does framework-independent parts
+    """Create default steps for processing.
 
     1. Set serializer and deserializer based on
      `json_loads` and `json_dumps` functions
@@ -47,14 +45,14 @@ def default_json_steps(
       mappers and a validator registered for given type and action ids.
 
     Args:
-        json_loads:
-        json_dumps:
-        type_id:
-        action_id_input:
-        action_id_output:
-        mapping_input_expect_list:
-        mapping_output_expect_list:
-        mapping_check_runtime:
+        json_loads: Function to deserialize JSON in runtime
+        json_dumps: Function to serialize JSON in runtime
+        type_id: Object type ID
+        action_id_input: Mapping/Validation action ID for given object for input
+        action_id_output: Mapping action ID for given object for input
+        mapping_input_expect_list: Map input as a list to reuse mappers
+        mapping_output_expect_list: Map output as a list to reuse mappers
+        mapping_check_runtime: If mapping load functions in runtime
         **kwargs: rest of the parameters
 
     Returns:

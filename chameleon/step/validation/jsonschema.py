@@ -21,6 +21,7 @@ default_schema_registry: SchemaRegistry = SchemaRegistry()
 validators: typing.MutableMapping[tuple[str, str | None], Validator] = {}
 
 logger = logging.getLogger(__name__)
+JSON_EXTENSIONS = (".json", ".yml", ".yaml")
 
 
 def register_jsonschema_validation(
@@ -32,11 +33,7 @@ def register_jsonschema_validation(
 ):
     key = (type_id, action_id)
 
-    schema_registry_work: SchemaRegistry
-    if schema_registry is None:
-        schema_registry_work = default_schema_registry
-    else:
-        schema_registry_work = schema_registry
+    schema_registry_work: SchemaRegistry = guess_schema_registry(schema_registry)
 
     create_validator(
         ref=ref,
@@ -57,16 +54,18 @@ def create_validator(
     ref: str,
     type_id: str,
     action_id: str | None = None,
-    schema_registry: SchemaRegistry = default_schema_registry,
+    schema_registry: SchemaRegistry = None,
 ):
     """Create JSON Schema Validator for given reference and cache it."""
+
+    schema_registry_work = guess_schema_registry(schema_registry)
     key = (type_id, action_id)
     if key not in validators:
         # noinspection PyTypeChecker
         validators[key] = DefaultJsonMapping(
             schema={"$ref": ref},
             format_checker=DefaultJsonMapping.FORMAT_CHECKER,
-            registry=schema_registry,
+            registry=schema_registry_work,
         )
 
 
@@ -87,13 +86,9 @@ def load_schemas(
         aliases: Schema id aliases to use.
         schema_registry: Base registry to use to evolve.
     """
-    global default_schema_registry
+    global default_schema_registry  # pylint: disable=global-statement
 
-    schema_registry_work: SchemaRegistry
-    if schema_registry is None:
-        schema_registry_work = default_schema_registry
-    else:
-        schema_registry_work = schema_registry
+    schema_registry_work = guess_schema_registry(schema_registry)
 
     known_schema_ids = set(schema_registry_work)  # it's iterable
 
@@ -110,15 +105,24 @@ def load_schemas(
     return schema_registry_work
 
 
-def update_validators(*, schema_registry=default_schema_registry):
+def update_validators(*, schema_registry: SchemaRegistry | None = None):
     """Update validators using new registry.
 
     Args:
         schema_registry: Registry to use for new validators.
     """
 
+    schema_registry_work = guess_schema_registry(schema_registry)
     for key, validator in list(validators.items()):
-        validators[key] = validator.evolve(registry=schema_registry)
+        validators[key] = validator.evolve(registry=schema_registry_work)
+
+
+def guess_schema_registry(schema_registry: SchemaRegistry | None) -> SchemaRegistry:
+    if schema_registry is None:
+        schema_registry_work = default_schema_registry
+    else:
+        schema_registry_work = schema_registry
+    return schema_registry_work
 
 
 def obtain_schema_data(
@@ -265,11 +269,7 @@ def is_json_or_yaml(filename: str):
     Args:
         filename: filename to check
     """
-
-    for ext in (".json", ".yml", ".yaml"):
-        if filename.endswith(ext):
-            return True
-    return False
+    return any(filename.endswith(ext) for ext in JSON_EXTENSIONS)
 
 
 def list_files(paths: typing.Sequence[str | pathlib.Path] | str | pathlib.Path):

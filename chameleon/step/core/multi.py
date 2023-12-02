@@ -54,10 +54,6 @@ class StepsDefinitionDict(typing.TypedDict, total=False):
     create_response_default: StepHandlerMulti | None
 
 
-async def noop_step(context: ctx.StepContext):
-    ...
-
-
 T = typing.TypeVar("T")
 
 
@@ -142,9 +138,7 @@ def ensure_single_step(
     step_default = make_single_step(key_default, defaults.pop(key_default, None), None)
     step = make_single_step(key_default, step_definition, step_default)
 
-    if step is None:
-        return step_default
-    return step
+    return step or step_default
 
 
 def prepare_multi_handler_steps(

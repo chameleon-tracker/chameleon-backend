@@ -84,6 +84,7 @@ def markup_field(model_field: str | None = None) -> fields.Field:
         help_text = f"{model_field} markup language"
     else:
         help_text = None
+
     return choice_field(
         MarkupLanguages,
         MarkupLanguages.PLAIN,

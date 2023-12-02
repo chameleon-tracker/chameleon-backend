@@ -43,22 +43,17 @@ class AutonameAppConfig(AppConfig):
 
         if not name:
             name = cls.__module__
-
-            if "." in name:
-                name = name[: name.rfind(".")]  # remove .apps (Django style naming)
+            name = name[: name.rfind(".")]  # remove .apps (Django style naming)
 
         label_value: str | None
         if label is None:
             label_value = None
+        elif isinstance(label, str):
+            label_value = label
+        elif isinstance(label, LabelProtocol):
+            label_value = label(name)
         else:
-            if isinstance(label, str):
-                label_value = label
-            elif isinstance(label, LabelProtocol):
-                label_value = label(name)
-            else:
-                raise TypeError(
-                    f"label must be None, str or LabelProtocol, got {label!r}"
-                )
+            raise TypeError(f"label must be None, str or LabelProtocol, got {label!r}")
 
         setattr(cls, "name", name)
         setattr(cls, "default", default)

@@ -37,10 +37,13 @@ async def django_fill_request_info(context: core.StepContext):
     context.request_info.content_encoding = request.encoding
 
 
+HTTP_METHODS_WITH_INPUT = {"POST", "PUT"}
+
+
 async def extract_body(context: core.StepContext):
     request_method = context.request_info.method
 
-    if request_method in ("POST", "PUT"):
+    if request_method in HTTP_METHODS_WITH_INPUT:
         context.request_body = context.request_info.request.body
 
 
