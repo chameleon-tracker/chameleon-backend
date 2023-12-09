@@ -131,38 +131,44 @@ def defined_steps(
     return filter(lambda step: step[1] is not None, steps)
 
 
+async def default_exception_handler(context: ctx.StepContext):
+    return False
+
+
+async def call_steps(
+    context: ctx.StepContext, steps: tuple[tuple[str, StepHandlerProtocol], ...]
+):
+    for current_step, step_handler in steps:
+        context.current_step = current_step
+        await step_handler(context)
+
+
 class UrlHandler:
-    steps: UrlHandlerSteps
+    process_steps: tuple[tuple[str, StepHandlerProtocol], ...]
     error_status_to_http: abc.Mapping[int, int]
+    response_steps: tuple[tuple[str, StepHandlerProtocol], ...]
 
     def __init__(
         self, *, steps: UrlHandlerSteps, error_status_to_http: abc.Mapping[int, int]
     ):
-        self.steps = steps
         self.error_status_to_http = error_status_to_http
+        self.process_steps = tuple(defined_steps(steps.process_order()))
+        self.exception_handler = steps.exception_handler or default_exception_handler
+        self.response_steps = tuple(defined_steps(steps.response_order()))
 
-    async def __call__(self, request, **url_params):
-        steps = self.steps
-
+    async def __call__(self, request: typing.Any, **url_params: str) -> typing.Any:
         context: ctx.StepContext = ctx.StepContext(
             request_info=ctx.StepContextRequestInfo(request=request),
-            custom_info=dict(url_params),
+            custom_info=url_params,
             error_status_to_http=self.error_status_to_http,
         )
 
         try:
-            for current_step, step_handler in defined_steps(steps.process_order()):
-                context.current_step = current_step
-                await step_handler(context)
+            await call_steps(context, self.process_steps)
         except Exception as e:  # pylint: disable=W0718
             context.exception = e
-            if steps.exception_handler is None:
-                raise
-            if not await steps.exception_handler(context):
+            if not await self.exception_handler(context):
                 raise  # re-raise the exception if not handled
 
-        for current_step, step_handler in defined_steps(steps.response_order()):
-            context.current_step = current_step
-            await step_handler(context)
-
+        await call_steps(context, self.response_steps)
         return context.response
