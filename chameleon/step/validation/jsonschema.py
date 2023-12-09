@@ -270,7 +270,7 @@ def is_json_or_yaml(filename: str):
     Args:
         filename: filename to check
     """
-    return any(filename.endswith(ext) for ext in JSON_EXTENSIONS)
+    return filename.endswith(JSON_EXTENSIONS)
 
 
 def list_files(paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path):

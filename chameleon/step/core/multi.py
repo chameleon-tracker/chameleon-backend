@@ -93,7 +93,7 @@ def list_step(
 ) -> core.StepHandlerProtocol | None:
     steps = tuple(filter(lambda step: step is not None, steps))
 
-    if len(steps) == 0:
+    if not steps:
         return None
 
     if len(steps) == 1:
@@ -145,7 +145,7 @@ def ensure_single_step(
 def prepare_multi_handler_steps(
     kwargs: StepsDefinitionDict,
 ) -> abc.Mapping[str, core.StepHandlerProtocol]:
-    defaults: abc.MutableMapping[str, core.StepHandlerProtocol] = {}
+    defaults: abc.MutableMapping[str, StepHandlerMulti | None] = {}
 
     # Extract all default handlers from kwargs to defaults dict
     for key in list(kwargs.keys()):
@@ -159,6 +159,10 @@ def prepare_multi_handler_steps(
         key = field.name
         # noinspection PyTypeChecker
         step = ensure_single_step(key, kwargs.pop(key, None), defaults)
+        if not isinstance(step, core.StepHandlerProtocol):
+            raise TypeError(
+                "Step handler for ${key} doesn't implement StepHandlerProtocol"
+            )
         result[key] = step
 
     if kwargs or defaults:

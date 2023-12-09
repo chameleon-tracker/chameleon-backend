@@ -54,7 +54,7 @@ class ProcessorRegistry:
         self,
         type_id: str,
         action_id: str | None = None,
-        default: ProcessorProtocol = None,
+        default: ProcessorProtocol | None = None,
     ):
         processor_id = _processor_id(type_id, action_id)
         return self._registry.get(processor_id, default)
