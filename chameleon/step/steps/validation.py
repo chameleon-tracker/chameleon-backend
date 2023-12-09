@@ -19,6 +19,7 @@ def generic_validation_step(
 ) -> core.StepHandlerProtocol:
     async def validation_step(context: core.StepContext):
         value = context.input_raw
+        validator_function: core.ProcessorProtocol
         validator_function = validation.registry.get(type_id, action_id, noop_validator)
         result = validator_function(value)
         if result:
