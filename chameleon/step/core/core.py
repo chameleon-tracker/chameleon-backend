@@ -126,7 +126,7 @@ class UrlHandlerSteps(UrlHandlerProcessSteps):
 
 
 def defined_steps(
-    steps: abc.Sequence[tuple[str, StepHandlerProtocol | None]]
+    steps: abc.Sequence[tuple[str, StepHandlerProtocol | None]],
 ) -> abc.Iterable[tuple[str, StepHandlerProtocol]]:
     return filter(lambda step: step[1] is not None, steps)
 
