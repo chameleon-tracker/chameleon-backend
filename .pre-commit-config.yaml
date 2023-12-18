@@ -1,7 +1,7 @@
 repos:
-- repo: https://github.com/psf/black
-  rev: 23.11.0
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.7
   hooks:
-  - id: black
-    args: ["--check"]
-    exclude: ^.*\b(migrations)\b.*$
+    - id: ruff
+      args: [ --fix ]
+    - id: ruff-format
