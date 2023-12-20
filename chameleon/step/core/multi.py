@@ -159,9 +159,13 @@ def prepare_multi_handler_steps(
         key = field.name
         # noinspection PyTypeChecker
         step = ensure_single_step(key, kwargs.pop(key, None), defaults)
+
+        if step is None:
+            continue
+
         if not isinstance(step, core.StepHandlerProtocol):
             raise TypeError(
-                "Step handler for ${key} doesn't implement StepHandlerProtocol"
+                f"Step handler for `{key}` doesn't implement StepHandlerProtocol"
             )
         result[key] = step
 
