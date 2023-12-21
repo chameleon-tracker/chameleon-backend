@@ -1,4 +1,5 @@
 import dataclasses
+import enum
 import typing
 from collections import abc
 
@@ -13,9 +14,17 @@ StepHandlerMulti = (
     | abc.Mapping[str, core.StepHandlerProtocol | None]
 )
 
-DEFAULT_SUFFIX = "_default"
-PRE_SUFFIX = "_pre"
-POST_SUFFIX = "_post"
+
+class StepSuffix(enum.Enum):
+    DEFAULT = "default"
+    PRE = "pre"
+    POST = "post"
+
+
+STEP_SUFFIXES = (StepSuffix.PRE.value, StepSuffix.DEFAULT.value, StepSuffix.POST.value)
+allowed_steps: abc.Set[str] = set(
+    map(lambda field: field.name, dataclasses.fields(core.UrlHandlerSteps))
+)
 
 
 class StepsDefinitionDict(typing.TypedDict, total=False):
@@ -100,15 +109,16 @@ def list_step(
         return steps[0]
 
     async def list_handler(context: ctx.StepContext):
+        result = False
         for step in steps:
             if step is not None:
-                await step(context)
+                result = await step(context) or result
+        return result
 
     return list_handler
 
 
 def make_single_step(
-    key: str,
     step_definition: StepHandlerMulti | None,
     step_default: core.StepHandlerProtocol | None,
 ) -> core.StepHandlerProtocol | None:
@@ -127,51 +137,117 @@ def make_single_step(
     if isinstance(step_definition, abc.Mapping):
         return multi_dict_step(step_default, step_definition)
 
-    raise ValueError(f"Step {key} has unknown type: {step_definition!r}")
+    return None
 
 
 def ensure_single_step(
-    key: str,
-    step_definition: StepHandlerMulti | None,
-    defaults: abc.MutableMapping[str, typing.Any],
+    step_base: StepHandlerMulti | None,
+    step_default: StepHandlerMulti | None,
+    step_pre: StepHandlerMulti | None,
+    step_post: StepHandlerMulti | None,
 ) -> core.StepHandlerProtocol | None:
-    key_default = key + DEFAULT_SUFFIX
-    step_default = make_single_step(key_default, defaults.pop(key_default, None), None)
-    step = make_single_step(key_default, step_definition, step_default)
+    single_default = make_single_step(step_definition=step_default, step_default=None)
+    single_base = make_single_step(
+        step_definition=step_base, step_default=single_default
+    )
+    base_single = single_base or single_default
 
-    return step or step_default
+    if base_single is None:
+        return None
+
+    single_pre = make_single_step(step_definition=step_pre, step_default=None)
+    single_post = make_single_step(step_definition=step_post, step_default=None)
+
+    return list_step([single_pre, base_single, single_post])
+
+
+def is_step_handler_multi(value):
+    if isinstance(value, core.StepHandlerProtocol):
+        return True
+    if isinstance(value, abc.Mapping):
+        keys = all(map(lambda element: isinstance(element, str), value.keys()))
+
+        values = all(
+            map(
+                lambda element: isinstance(element, core.StepHandlerProtocol),
+                value.values(),
+            )
+        )
+
+        keys_allowed = all(map(lambda element: element in allowed_steps, value.keys()))
+
+        return keys and values and keys_allowed
+
+    if isinstance(value, abc.Sequence):
+        return all(
+            map(lambda element: isinstance(element, core.StepHandlerProtocol), value)
+        )
+
+
+def split_steps(
+    *,
+    defined_steps: abc.MutableMapping[str, StepHandlerMulti | None],
+    base_steps: abc.MutableMapping[str, StepHandlerMulti | None],
+    default_steps: abc.MutableMapping[str, StepHandlerMulti | None],
+    pre_steps: abc.MutableMapping[str, StepHandlerMulti | None],
+    post_steps: abc.MutableMapping[str, StepHandlerMulti | None],
+):
+    steps = {
+        None: base_steps,
+        StepSuffix.DEFAULT.value: default_steps,
+        StepSuffix.PRE.value: pre_steps,
+        StepSuffix.POST.value: post_steps,
+    }
+    for name, step in defined_steps.items():
+        if step is None:
+            continue
+
+        if not is_step_handler_multi(step):
+            raise TypeError(
+                f"Step handler for `{name}` doesn't implement StepHandlerMulti or None"
+            )
+
+        if name.endswith(STEP_SUFFIXES):
+            step_name, suffix = name.rsplit("_", 1)
+            if suffix not in STEP_SUFFIXES:
+                raise KeyError(f"Step suffix `{suffix}` is not allowed")
+        else:
+            step_name = name
+            suffix = None
+
+        if step_name not in allowed_steps:
+            raise KeyError(f"Step `{step_name}` is not allowed")
+
+        steps[suffix][step_name] = step
 
 
 def prepare_multi_handler_steps(
-    kwargs: StepsDefinitionDict,
+    defined_steps: StepsDefinitionDict,
 ) -> abc.Mapping[str, core.StepHandlerProtocol]:
-    defaults: abc.MutableMapping[str, StepHandlerMulti | None] = {}
+    base_steps: abc.MutableMapping[str, StepHandlerMulti | None] = {}
+    default_steps: abc.MutableMapping[str, StepHandlerMulti | None] = {}
+    pre_steps: abc.MutableMapping[str, StepHandlerMulti | None] = {}
+    post_steps: abc.MutableMapping[str, StepHandlerMulti | None] = {}
 
-    # Extract all default handlers from kwargs to defaults dict
-    for key in list(kwargs.keys()):
-        if key.endswith(DEFAULT_SUFFIX):
-            defaults[key] = kwargs.pop(key)
+    split_steps(
+        defined_steps=defined_steps,
+        base_steps=base_steps,
+        default_steps=default_steps,
+        pre_steps=pre_steps,
+        post_steps=post_steps,
+    )
 
     # Ensure all normal handlers become single function (with defaults)
     result: dict[str, core.StepHandlerProtocol | None] = {}
 
-    for field in dataclasses.fields(core.UrlHandlerSteps):
-        key = field.name
+    for step in allowed_steps:
         # noinspection PyTypeChecker
-        step = ensure_single_step(key, kwargs.pop(key, None), defaults)
-
-        if step is None:
-            continue
-
-        if not isinstance(step, core.StepHandlerProtocol):
-            raise TypeError(
-                f"Step handler for `{key}` doesn't implement StepHandlerProtocol"
-            )
-        result[key] = step
-
-    if kwargs or defaults:
-        common = {**kwargs, **defaults}
-        raise ValueError(f"Found unsupported keys in kwargs: {tuple(common.keys())}")
+        result[step] = ensure_single_step(
+            step_base=base_steps.get(step),
+            step_default=default_steps.get(step),
+            step_pre=pre_steps.get(step),
+            step_post=post_steps.get(step),
+        )
 
     return clean_values(result)
 
