@@ -155,24 +155,26 @@ async def test_list_step(
 class MultiStepParams:
     step1: StepParams = step_not_exists
     step2: StepParams = step_not_exists
-    multi_type: str  # dict, list, single
+    multi_type: str  # dict, list, or single
 
 
+# To keep param definitions short, following abbreviations are used:
 # ex means exists, default
 # aw means "not awaited"
 # no means not defined
-# Single ---------------
+
+# Single (direct handler) ---------------
 multi_step_single_ex = MultiStepParams(step1=step_default, multi_type="single")
 multi_step_single_aw = MultiStepParams(step1=step_not_awaited, multi_type="single")
 multi_step_single_no = MultiStepParams(multi_type="single")
-# List -----------------
+# List (list of handlers) -----------------
 # form is [ step1 ]
 # second step is not used as it basically adds nothing. See test_list_step for cases
 multi_step_list_no = MultiStepParams(multi_type="list")
 multi_step_list_ex = MultiStepParams(step1=step_default, multi_type="list")
 multi_step_list_aw = MultiStepParams(step1=step_not_awaited, multi_type="list")
 
-# Dict -----------------
+# Dict (map of handlers) -----------------
 # {"test": step1, "test1": step2}
 multi_step_dict_no_no = MultiStepParams(multi_type="dict")
 multi_step_dict_ex_no = MultiStepParams(step1=step_default, multi_type="dict")
@@ -180,12 +182,13 @@ multi_step_dict_no_aw = MultiStepParams(step2=step_not_awaited, multi_type="dict
 multi_step_dict_ex_aw = MultiStepParams(
     step1=step_default, step2=step_not_awaited, multi_type="dict"
 )
-# Special forms for default:
+# Additional special forms for dict:
 multi_step_dict_aw_no = MultiStepParams(step1=step_not_awaited, multi_type="dict")
 multi_step_dict_aw_aw = MultiStepParams(
     step1=step_not_awaited, step2=step_not_awaited, multi_type="dict"
 )
 
+# pre- and post- steps for expected result True
 pre_post_expect_result_True = (
     multi_step_single_no,
     multi_step_list_no,
@@ -196,6 +199,7 @@ pre_post_expect_result_True = (
     multi_step_dict_ex_aw,
 )
 
+# pre- and post- steps for expected result False
 pre_post_expect_result_False = (
     multi_step_single_no,
     multi_step_list_no,
@@ -203,6 +207,7 @@ pre_post_expect_result_False = (
     multi_step_dict_no_aw,
 )
 
+# pre- and post- steps for expected result None
 pre_post_expect_result_None = (
     multi_step_single_no,
     multi_step_list_no,
@@ -219,7 +224,7 @@ pre_post_expect_result_None = (
 @pytest.mark.parametrize("pre_params", pre_post_expect_result_True)
 @pytest.mark.parametrize("post_params", pre_post_expect_result_True)
 @pytest.mark.parametrize(
-    "default_params,step_params,expect_result",
+    "default_params, step_params, expect_result",
     (
         # Single step, Single default
         (multi_step_single_ex, multi_step_single_no, True),  # 2
@@ -251,6 +256,8 @@ async def test_ensure_single_step_single(
     Args:
         default_params: default step definition
         step_params: primary step definition
+        pre_params: pre-step definition
+        post_params: post-step definition
         expect_result: expected result
     """
     await ensure_single_step_test_impl(
@@ -266,7 +273,7 @@ async def test_ensure_single_step_single(
 @pytest.mark.parametrize("pre_params", pre_post_expect_result_True)
 @pytest.mark.parametrize("post_params", pre_post_expect_result_True)
 @pytest.mark.parametrize(
-    "default_params,step_params,expect_result",
+    "default_params, step_params, expect_result",
     (
         # List - no default
         (multi_step_single_no, multi_step_list_ex, True),  # 1
@@ -298,6 +305,8 @@ async def test_ensure_single_step_list(
     Args:
         default_params: default step definition
         step_params: primary step definition
+        pre_params: pre-step definition
+        post_params: post-step definition
         expect_result: expected result
     """
     await ensure_single_step_test_impl(
@@ -313,7 +322,7 @@ async def test_ensure_single_step_list(
 @pytest.mark.parametrize("pre_params", pre_post_expect_result_True)
 @pytest.mark.parametrize("post_params", pre_post_expect_result_True)
 @pytest.mark.parametrize(
-    "default_params,step_params,expect_result",
+    "default_params, step_params, expect_result",
     (
         # Dict - no default
         (multi_step_single_no, multi_step_dict_ex_no, True),  # 1
@@ -354,6 +363,8 @@ async def test_ensure_single_step_dict(
     Args:
         default_params: default step definition
         step_params: primary step definition
+        pre_params: pre-step definition
+        post_params: post-step definition
         expect_result: expected result
     """
     await ensure_single_step_test_impl(
@@ -387,6 +398,15 @@ async def test_ensure_single_step_false(
     post_params: MultiStepParams,
     expect_result: bool | None,
 ):
+    """Test ensure_single_step in case of the expected result False.
+
+    Args:
+        default_params: default step definition
+        step_params: primary step definition
+        pre_params: pre-step definition
+        post_params: post-step definition
+        expect_result: expected result
+    """
     await ensure_single_step_test_impl(
         step_params=step_params,
         default_params=default_params,
@@ -414,7 +434,7 @@ async def test_ensure_single_step_false(
         (multi_step_dict_no_no, multi_step_dict_no_no, None),
     ),
 )
-async def test_ensure_single_step_not_awaited(
+async def test_ensure_single_step_none(
     *,
     default_params: MultiStepParams,
     step_params: MultiStepParams,
@@ -422,6 +442,15 @@ async def test_ensure_single_step_not_awaited(
     post_params: MultiStepParams,
     expect_result: bool | None,
 ):
+    """Test ensure_single_step in case of the expected result None.
+
+    Args:
+        default_params: default step definition
+        step_params: primary step definition
+        pre_params: pre-step definition
+        post_params: post-step definition
+        expect_result: expected result
+    """
     await ensure_single_step_test_impl(
         step_params=step_params,
         default_params=default_params,
@@ -435,9 +464,9 @@ async def ensure_single_step_test_impl(
     *,
     step_params: MultiStepParams,
     default_params: MultiStepParams,
+    pre_params: MultiStepParams,
+    post_params: MultiStepParams,
     expect_result: bool | None,
-    pre_params: MultiStepParams = multi_step_list_no,
-    post_params: MultiStepParams = multi_step_list_no,
 ):
     step1, step2, step_multi = create_multi_step(step_params)
     default1, default2, default_multi = create_multi_step(default_params)
@@ -484,7 +513,7 @@ def create_multi_step(
 
 
 def assert_multi_step_awaited(
-    step_params: MultiStepParams | None,
+    step_params: MultiStepParams,
     step1: mock.AsyncMock | None,
     step2: mock.AsyncMock | None,
 ):
