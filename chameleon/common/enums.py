@@ -6,6 +6,6 @@ __all__ = ["MarkupLanguages"]
 class MarkupLanguages(models.TextChoices):
     """Known markup languages."""
 
-    PLAIN = "PLAIN", "Plain text"
-    MARKDOWN = "MARKDOWN", "Markdown"
-    ASCIIDOC = "ASCIIDOC", "AsciiDoc"
+    PLAIN = "PLAIN"
+    MARKDOWN = "MARKDOWN"
+    ASCIIDOC = "ASCIIDOC"
