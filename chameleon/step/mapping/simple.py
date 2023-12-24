@@ -2,8 +2,8 @@ import typing
 
 __all__ = (
     "register_simple_mapping",
-    "register_simple_mapping_dict",
-    "register_simple_mapping_object",
+    "register_simple_mapping_from_dict",
+    "register_simple_mapping_from_object",
     "get_field_attr",
     "get_field_dict",
     "get_field_depth",
@@ -57,7 +57,7 @@ def register_simple_mapping(
     registry.register(type_id=type_id, action_id=action_id, processor=mapping)
 
 
-def register_simple_mapping_dict(
+def register_simple_mapping_from_dict(
     *,
     type_id: str,
     action_id: str | None = None,
@@ -77,7 +77,7 @@ def register_simple_mapping_dict(
     )
 
 
-def register_simple_mapping_object(
+def register_simple_mapping_from_object(
     *,
     type_id: str,
     action_id: str | None = None,
