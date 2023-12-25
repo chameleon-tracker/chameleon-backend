@@ -1,5 +1,6 @@
 from chameleon.project.project.models import ChameleonProject
 from chameleon.step.mapping import simple as mapping
+from chameleon.history.utils import register_mapping_history_output
 
 mapping.register_simple_mapping_from_dict(
     type_id="project",
@@ -28,3 +29,5 @@ mapping.register_simple_mapping_from_dict(
     target_object_type=dict,
     fields=("title", "description", "description_markup"),
 )
+
+register_mapping_history_output(type_id="project", action_id="history")
