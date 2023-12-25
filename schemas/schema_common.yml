@@ -15,3 +15,27 @@ $defs:
     description: |-
       Public ID must contain only base64 urlsafe characters
     pattern: '^[a-zA-Z0-9_-]+$'
+
+  ObjectHistory:
+    type: object
+    description: A single atomic change.
+    properties:
+      timestamp:
+        type: string
+        format: date-time
+        description: Action time
+      action:
+        type: string
+        description: action name
+      field:
+        type: string
+        description: field name, if aplicable
+      value_from:
+        type: str
+        description: old value if set
+      value_to:
+        type: str
+        description: new value if set
+    required:
+      - timestamp
+      - action
