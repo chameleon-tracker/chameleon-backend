@@ -15,10 +15,8 @@ def set_kwargs_value(target: abc.MutableMapping[str, typing.Any], **kwargs):
     """Set value with validation that this value isn't specified twice.
 
     Args:
-        target:
-        **kwargs:
-
-    Returns:
+        target: target mutable mapping to put all values into
+        **kwargs: additional values to assign
 
     """
     for key, value in kwargs.items():
@@ -58,8 +56,6 @@ def choice_field(
         blank: If it's allowed blank values for the field.
         **kwargs: Additional arguments for field type constructor.
 
-    Returns:
-
     """
     set_kwargs_value(
         kwargs,
@@ -80,9 +76,7 @@ def markup_field(model_field: str | None = None, **kwargs) -> fields.Field:
 
     Args:
         model_field: text representation of the field used for help text
-
-    Returns: Field
-
+        **kwargs: Additional arguments for field type constructor.
     """
     if model_field:
         help_text = f"{model_field} markup language"

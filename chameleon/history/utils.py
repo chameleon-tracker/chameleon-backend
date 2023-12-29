@@ -4,7 +4,6 @@ import datetime
 import typing
 from collections import abc
 
-from icecream import ic
 from chameleon.common.models import ChameleonBaseModel
 from chameleon.history.models import ChameleonHistoryBase
 from chameleon.step.mapping.simple import register_simple_mapping_from_object
@@ -45,46 +44,40 @@ def generate_history_objects[T: ChameleonBaseModel, F: ChameleonHistoryBase](
         raise ValueError("source and target objects has different primary keys")
 
     if target_id is None:  # Delete
-        return [
-            history_model(
-                object_id=source_id,
-                timestamp=timestamp,
-                action=action,
-                field=None,
-                value_from=None,
-                value_to=None,
-            )
-        ]
-
-    result = []
+        yield history_model(
+            object_id=source_id,
+            timestamp=timestamp,
+            action=action,
+            field=None,
+            value_from=None,
+            value_to=None,
+        )
+        return
 
     if source_id is None:  # Create
-        result.append(
-            history_model(
-                object_id=target_id,
-                timestamp=timestamp,
-                action=action,
-                field=None,
-                value_from=None,
-                value_to=None,
-            )
+        yield history_model(
+            object_id=target_id,
+            timestamp=timestamp,
+            action=action,
+            field=None,
+            value_from=None,
+            value_to=None,
         )
 
-    difference = object_difference(source_value, target_value)
-    ic(timestamp, difference)
+    for key, values in object_difference(source_value, target_value):
+        if key == target_id:  # Skip ID key
+            continue
 
-    for key, value in difference.items():
-        result.append(
-            history_model(
-                object_id=target_id,
-                timestamp=timestamp,
-                action=action,
-                field=key,
-                value_from=value[0],
-                value_to=value[1],
-            )
+        value_from, value_to = values
+
+        yield history_model(
+            object_id=target_id,
+            timestamp=timestamp,
+            action=action,
+            field=key,
+            value_from=value_from,
+            value_to=value_to,
         )
-    return result
 
 
 def object_values[T: ChameleonBaseModel](
@@ -100,7 +93,7 @@ def object_values[T: ChameleonBaseModel](
 def object_difference(
     source: abc.Mapping[str, typing.Any],
     target: abc.Mapping[str, typing.Any],
-) -> abc.Mapping[str, tuple[typing.Any, typing.Any]]:
+) -> abc.Sequence[tuple[str, tuple[str | None, str | None]]]:
     source_keys = frozenset(source.keys())
     target_keys = frozenset(target.keys())
 
@@ -108,23 +101,10 @@ def object_difference(
     only_target_target_keys = target_keys - source_keys
     common_keys = source_keys - only_source_keys_keys
 
-    ic(
-        source_keys,
-        target_keys,
-        only_source_keys_keys,
-        only_target_target_keys,
-        common_keys,
-    )
-
-    only_source = {key: (source[key], None) for key in only_source_keys_keys}
-    only_target = {key: (None, target[key]) for key in only_target_target_keys}
-    common = {
-        key: (source[key], target[key])
+    yield from ((key, (str(source[key]), None)) for key in only_source_keys_keys)
+    yield from ((key, (None, str(target[key]))) for key in only_target_target_keys)
+    yield from (
+        (key, (str(source[key]), str(target[key])))
         for key in common_keys
         if source[key] != target[key]
-    }
-
-    result: abc.Mapping[str, tuple[typing.Any, typing.Any]]
-    result = dict(**only_source, **only_target, **common)
-
-    return {key: result[key] for key in sorted(result.keys())}
+    )
