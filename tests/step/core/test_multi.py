@@ -482,7 +482,6 @@ async def ensure_single_step_test_impl(
 
     if expect_result is None:
         assert step is None
-        return
     else:
         assert step is not None
 

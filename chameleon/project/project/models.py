@@ -3,12 +3,16 @@ from django.db import models
 from chameleon.common.fields import markup_field
 from chameleon.common.models import ChameleonBaseModel
 
-__all__ = ["ChameleonProject"]
+from chameleon.history.models import ChameleonHistoryBase
+
+__all__ = ["ChameleonProject", "ChameleonProjectHistory"]
 
 
 class ChameleonProject(ChameleonBaseModel):
     title = models.CharField(max_length=200, help_text="Project title")
-    # Project description
-    description = models.TextField(blank=True, help_text="Project description")
-    # Project description markup language
+    description = models.TextField(null=True, help_text="Project description")
     description_markup = markup_field("Project description")
+
+
+class ChameleonProjectHistory(ChameleonHistoryBase):
+    ...

@@ -110,7 +110,7 @@ def list_step(
 
     async def list_handler(context: ctx.StepContext):
         result = False
-        for step in steps:
+        for step in steps:  # pylint disable: consider-using-any-or-all
             if step is not None:
                 result = await step(context) or result
         return result
@@ -182,6 +182,8 @@ def is_step_handler_multi(value):
         return all(
             map(lambda element: isinstance(element, core.StepHandlerProtocol), value)
         )
+
+    raise ValueError(f"Unsupported type for value: {type(value)!r}")
 
 
 def split_steps(

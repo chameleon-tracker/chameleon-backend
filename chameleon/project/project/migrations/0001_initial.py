@@ -25,15 +25,15 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(help_text="Project title", max_length=200)),
                 (
                     "description",
-                    models.TextField(blank=True, help_text="Project description"),
+                    models.TextField(help_text="Project description", null=True),
                 ),
                 (
                     "description_markup",
                     models.CharField(
                         choices=[
-                            ("PLAIN", "Plain text"),
+                            ("PLAIN", "Plain"),
                             ("MARKDOWN", "Markdown"),
-                            ("ASCIIDOC", "AsciiDoc"),
+                            ("ASCIIDOC", "Asciidoc"),
                         ],
                         default="PLAIN",
                         help_text="Project description markup language",

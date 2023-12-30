@@ -1,19 +1,20 @@
 import typing
+from collections import abc
+from chameleon.step.mapping import registry
+
 
 __all__ = (
     "register_simple_mapping",
-    "register_simple_mapping_dict",
-    "register_simple_mapping_object",
+    "register_simple_mapping_from_dict",
+    "register_simple_mapping_from_object",
     "get_field_attr",
     "get_field_dict",
     "get_field_depth",
+    "FieldConverterProtocol",
 )
 
-from collections import abc
-
-from chameleon.step.mapping import registry
-
 GetattrProtocol = abc.Callable[[typing.Any, str], typing.Any]
+FieldConverterProtocol = abc.Callable[[typing.Any], typing.Any]
 
 
 def register_simple_mapping(
@@ -25,6 +26,7 @@ def register_simple_mapping(
     include_none=False,
     fields: abc.Sequence[str] | None = None,
     custom_mapping: abc.Mapping[str, str] | None = None,
+    custom_converters: abc.Mapping[str, FieldConverterProtocol] | None = None,
 ):
     """Register simple mapping function.
 
@@ -45,19 +47,32 @@ def register_simple_mapping(
     if not field_mapping:
         raise ValueError("No field mapping defined")
 
+    if not custom_converters:
+        custom_converters = {}
+
+    unknown_converters = set(custom_converters.keys()) - field_mapping.keys()
+
+    if unknown_converters:
+        raise ValueError(f"Unknown field converters provided: {unknown_converters}")
+
     def mapping(source):
         kwargs = {}
-        for dest_field, source_field in field_mapping.items():
-            dest_value = get_field_fun(source, source_field)
-            if dest_value is not None or include_none:
-                kwargs[dest_field] = dest_value
+        for target_field, source_field in field_mapping.items():
+            converter = custom_converters.get(target_field)
+            if converter is None:
+                target_field_value = get_field_fun(source, source_field)
+            else:
+                target_field_value = converter(get_field_fun(source, source_field))
+
+            if target_field_value is not None or include_none:
+                kwargs[target_field] = target_field_value
 
         return target_object_type(**kwargs)
 
     registry.register(type_id=type_id, action_id=action_id, processor=mapping)
 
 
-def register_simple_mapping_dict(
+def register_simple_mapping_from_dict(
     *,
     type_id: str,
     action_id: str | None = None,
@@ -65,6 +80,7 @@ def register_simple_mapping_dict(
     include_none=False,
     fields: abc.Sequence[str] | None = None,
     custom_mapping: abc.Mapping[str, str] | None = None,
+    custom_converters: abc.Mapping[str, FieldConverterProtocol] | None = None,
 ):
     register_simple_mapping(
         type_id=type_id,
@@ -74,10 +90,11 @@ def register_simple_mapping_dict(
         get_field_fun=get_field_depth(get_field_dict),
         fields=fields,
         custom_mapping=custom_mapping,
+        custom_converters=custom_converters,
     )
 
 
-def register_simple_mapping_object(
+def register_simple_mapping_from_object(
     *,
     type_id: str,
     action_id: str | None = None,
@@ -85,6 +102,7 @@ def register_simple_mapping_object(
     include_none=False,
     fields: abc.Sequence[str] | None = None,
     custom_mapping: abc.Mapping[str, str] | None = None,
+    custom_converters: abc.Mapping[str, FieldConverterProtocol] | None = None,
 ):
     register_simple_mapping(
         type_id=type_id,
@@ -94,6 +112,7 @@ def register_simple_mapping_object(
         get_field_fun=get_field_depth(get_field_attr),
         fields=fields,
         custom_mapping=custom_mapping,
+        custom_converters=custom_converters,
     )
 
 

@@ -15,10 +15,8 @@ def set_kwargs_value(target: abc.MutableMapping[str, typing.Any], **kwargs):
     """Set value with validation that this value isn't specified twice.
 
     Args:
-        target:
-        **kwargs:
-
-    Returns:
+        target: target mutable mapping to put all values into
+        **kwargs: additional values to assign
 
     """
     for key, value in kwargs.items():
@@ -43,6 +41,7 @@ def choice_field(
     /,
     *,
     field_type: type[fields.Field] = fields.CharField,
+    blank: bool = False,
     **kwargs,
 ) -> fields.Field:
     """Generate an enumeration field with some default attributes.
@@ -54,9 +53,8 @@ def choice_field(
         default: Default version for given enumeration field.
         help_text: Documentation text for a field.
         field_type: Database field type.
+        blank: If it's allowed blank values for the field.
         **kwargs: Additional arguments for field type constructor.
-
-    Returns:
 
     """
     set_kwargs_value(
@@ -64,6 +62,7 @@ def choice_field(
         choices=enumeration.choices,
         help_text=help_text,
         default=default,
+        blank=blank,
     )
 
     if field_type is fields.CharField:
@@ -72,14 +71,12 @@ def choice_field(
     return field_type(**kwargs)
 
 
-def markup_field(model_field: str | None = None) -> fields.Field:
+def markup_field(model_field: str | None = None, **kwargs) -> fields.Field:
     """Generate choice field for markup language.
 
     Args:
         model_field: text representation of the field used for help text
-
-    Returns: Field
-
+        **kwargs: Additional arguments for field type constructor.
     """
     if model_field:
         help_text = f"{model_field} markup language"
@@ -90,4 +87,5 @@ def markup_field(model_field: str | None = None) -> fields.Field:
         MarkupLanguages,
         MarkupLanguages.PLAIN,
         help_text,
+        **kwargs,
     )

@@ -59,6 +59,14 @@ processor_update = django.django_json_steps(
     exception_handler={"validate_input": chameleon_validation_error_handler},
 )
 
+processor_history = django.django_json_steps(
+    type_id="project",
+    map_input=None,
+    action_id_output="history",
+    mapping_output_expect_list=True,
+    business=api.project_history,
+)
+
 error_status_to_http = {1: 400}
 urlpatterns = (
     re_path(
@@ -74,6 +82,13 @@ urlpatterns = (
         django.method_dispatcher(
             get=processor_get,
             post=processor_update,
+            error_status_to_http=error_status_to_http,
+        ),
+    ),
+    re_path(
+        "^/(?P<project_id>[a-zA-Z0-9_-]+)/history$",
+        django.method_dispatcher(
+            get=processor_history,
             error_status_to_http=error_status_to_http,
         ),
     ),
