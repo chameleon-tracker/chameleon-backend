@@ -29,12 +29,12 @@ $defs:
         description: action name
       field:
         type: string
-        description: field name, if aplicable
+        description: field name, if applicable
       value_from:
-        type: str
+        type: string
         description: old value if set
       value_to:
-        type: str
+        type: string
         description: new value if set
     required:
       - timestamp
