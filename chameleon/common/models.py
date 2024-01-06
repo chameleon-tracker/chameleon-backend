@@ -1,6 +1,10 @@
+import typing
+from collections import abc
 from itertools import chain
 
 from django.db import models
+
+from chameleon.common.query import DjangoModelQuery, AbstractModelQuery
 
 
 class PrintableModel(models.Model):
@@ -31,19 +35,24 @@ class UpdatableModel(models.Model):
     class Meta:
         abstract = True
 
-    async def update(self, commit: bool = False, /, **kwargs):
-        """Update model from a dict.
-
-        Args:
-            commit: if automatically commit model
-            **kwargs: parameters to update
-        """
+    def set_fields(self, **kwargs):
         for key, value in kwargs.items():
-            setattr(self, key, value)
-        if commit:
-            await self.asave(update_fields=kwargs.keys(), force_update=True)
+            if isinstance(getattr(self, key), models.Field):
+                setattr(self, key, value)
+            else:
+                raise KeyError(f"Unable to update field {key} as it's not a field")
+
+    async def update(self, keys: abc.Sequence[str] | None = None):
+        await self.asave(update_fields=keys, force_update=True)
+
+    async def insert(self):
+        await self.asave(force_insert=True)
 
 
 class ChameleonBaseModel(PrintableModel, UpdatableModel):
     class Meta:
         abstract = True
+
+    objects = models.QuerySet.as_manager()
+
+    query: AbstractModelQuery[models.QuerySet, typing.Self] = DjangoModelQuery(objects)
