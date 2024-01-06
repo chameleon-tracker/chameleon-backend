@@ -111,8 +111,7 @@ def list_step(
     async def list_handler(context: ctx.StepContext):
         result = False
         for step in steps:  # pylint disable: consider-using-any-or-all
-            if step is not None:
-                result = await step(context) or result
+            result = await step(context) or result
         return result
 
     return list_handler
