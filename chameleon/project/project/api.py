@@ -10,10 +10,9 @@ from chameleon.history.utils import generate_history_objects
 
 async def project_history(context: core.StepContext):
     project_id = context.custom_info["project_id"]
-    # noinspection PyUnresolvedReferences
-    # pylint: disable=E1101
-    filtered = ChameleonProjectHistory.objects.filter(object_id=project_id)
-    history = [value async for value in filtered]
+    history = await ChameleonProjectHistory.query.by_object_id(
+        object_id=project_id
+    ).all()
     context.output_business = history
 
 
@@ -21,7 +20,7 @@ async def project_create_fun(context: core.StepContext):
     project = context.input_business
     now = datetime.datetime.now(datetime.UTC)
     async with transaction.aatomic():
-        await project.asave(force_insert=True)
+        await project.insert()
 
         source_object = project.to_dict()
         await create_history(
@@ -35,18 +34,12 @@ async def project_create_fun(context: core.StepContext):
 
 
 async def project_list_fun(context: core.StepContext):
-    # noinspection PyUnresolvedReferences
-    # pylint: disable=E1101
-    context.output_business = [
-        project async for project in ChameleonProject.objects.all()
-    ]
+    context.output_business = await ChameleonProject.query.all()
 
 
 async def project_get_fun(context: core.StepContext):
     project_id = context.custom_info["project_id"]
-    # noinspection PyUnresolvedReferences
-    # pylint: disable=E1101
-    context.output_business = await ChameleonProject.objects.aget(pk=project_id)
+    context.output_business = await ChameleonProject.query.by_id(project_id).first()
 
 
 async def project_update_fun(context: core.StepContext):
@@ -54,11 +47,12 @@ async def project_update_fun(context: core.StepContext):
     project_data = context.input_business
     now = datetime.datetime.now(datetime.UTC)
     async with transaction.aatomic():
-        # noinspection PyUnresolvedReferences
-        # pylint: disable=E1101
-        project: ChameleonProject = await ChameleonProject.objects.aget(pk=project_id)
+        project: ChameleonProject = await ChameleonProject.query.by_id(
+            project_id
+        ).first()
         source = project.to_dict()
-        await project.update(commit=True, **project_data)
+        project.set_fields(**project_data)
+        await project.update(keys=project_data.keys())
         target = project.to_dict()
         await create_history(
             source_object=source, target_object=target, action="UPDATE", timestamp=now
@@ -80,4 +74,4 @@ async def create_history(
         action=action,
         timestamp=timestamp,
     )
-    await ChameleonProjectHistory.objects.abulk_create(history_objects)
+    await ChameleonProjectHistory.query.bulk_create(history_objects)
