@@ -6,6 +6,7 @@ from collections import abc
 
 from chameleon.common.models import ChameleonBaseModel
 from chameleon.history.models import ChameleonHistoryBase
+from chameleon.step.mapping.datetime import to_external_value
 from chameleon.step.mapping.simple import register_simple_mapping_from_object
 
 
@@ -15,7 +16,7 @@ def register_mapping_history_output(*, type_id: str, action_id: str | None):
         action_id=action_id,
         target_object_type=dict,
         fields=("timestamp", "action", "field", "value_from", "value_to"),
-        custom_converters={"timestamp": lambda value: value.isoformat()},
+        custom_converters={"timestamp": to_external_value},
     )
 
 
