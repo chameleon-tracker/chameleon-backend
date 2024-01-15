@@ -1,7 +1,7 @@
 from django.db import models
 
-from chameleon.common.fields import markup_field
-from chameleon.common.models import ChameleonBaseModel
+from chameleon.common.django.fields import markup_field
+from chameleon.common.django.models import ChameleonBaseModel
 
 from chameleon.history.models import ChameleonHistoryBase
 

@@ -1,6 +1,6 @@
 from django.db import models
 
-from chameleon.common.models import ChameleonBaseModel
+from chameleon.common.django.models import ChameleonBaseModel
 from chameleon.history.models import ChameleonHistoryBase
 from chameleon.project.project import models as project
 

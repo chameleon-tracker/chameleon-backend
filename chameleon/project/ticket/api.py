@@ -1,7 +1,7 @@
 from collections import abc
 import typing
 
-from chameleon.common import transaction
+from chameleon.common.django import transaction
 from chameleon.project.ticket.models import ChameleonTicket, ChameleonTicketHistory
 from chameleon.step import core
 from chameleon.step.mapping import datetime
