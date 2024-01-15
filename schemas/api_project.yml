@@ -95,3 +95,30 @@ paths:
           description: Invalid input
         '404':
           description: Object not found
+  /api/project/{projectId}/ticket:
+    get:
+      description: List available projects
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'schema_ticket.yml#/$defs/ChameleonTicket'
+    post:
+      description: Create new project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'schema_ticket.yml#/$defs/ChameleonTicketCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: 'schema_ticket.yml#/$defs/ChameleonTicket'
