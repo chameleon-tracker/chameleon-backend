@@ -49,4 +49,10 @@ $defs:
       Field definition to update given ChameleonProject
     allOf:
       - $ref: "#/$defs/ChameleonProjectCommon"
+    anyOf:
+      - required:
+          - title
+      - required:
+          - description
+          - description_markup
     unevaluatedProperties: false
