@@ -1,5 +1,5 @@
-from collections import abc
 import typing
+from collections import abc
 
 from django.db import models
 

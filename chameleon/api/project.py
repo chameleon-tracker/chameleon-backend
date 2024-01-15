@@ -1,32 +1,13 @@
 import logging
 
 from django.urls import re_path
-from referencing.exceptions import Unresolvable
 
+from chameleon.api.chameleon import chameleon_validation_error_handler
 from chameleon.project.project import api
 from chameleon.project.ticket import api as ticket_api
-from chameleon.step import core
 from chameleon.step.framework import steps_django as django
-from chameleon.step.steps.validation import ValidationError
 
 logger = logging.getLogger(__name__)
-
-
-# TODO: create a Chameleon-wide default step and settings
-async def chameleon_validation_error_handler(context: core.StepContext):
-    if not isinstance(context.exception, (ValidationError, ValueError, Unresolvable)):
-        return False
-
-    # TODO: Good start, add and document more errors
-    context.error_status = 1  # validation error
-    logger.exception("Validation Error", exc_info=context.exception)
-    # TODO: pass ValidationError's to the response
-    context.output_raw = {
-        "error": 10,
-    }
-
-    return True
-
 
 processor_create = django.django_json_steps(
     type_id="project",

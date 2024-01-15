@@ -1,7 +1,7 @@
-from chameleon.project.project.models import ChameleonProject
-from chameleon.step.mapping import simple as mapping
-from chameleon.step.mapping import datetime
 from chameleon.history.utils import register_mapping_history_output
+from chameleon.project.project.models import ChameleonProject
+from chameleon.step.mapping import datetime
+from chameleon.step.mapping import simple as mapping
 
 mapping.register_simple_mapping_from_dict(
     type_id="project",

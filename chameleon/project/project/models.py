@@ -3,7 +3,6 @@ from django.db import models
 from chameleon.common.django.fields import markup_field
 from chameleon.common.django.models import ChameleonBaseModel
 from chameleon.common.django.query import DjangoModelQuery
-
 from chameleon.history.models import ChameleonHistoryBase
 
 __all__ = ["ChameleonProject", "ChameleonProjectHistory"]

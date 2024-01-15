@@ -1,7 +1,7 @@
 import typing
 from collections import abc
-from chameleon.step.mapping import registry
 
+from chameleon.step.mapping import registry
 
 __all__ = (
     "register_simple_mapping",
