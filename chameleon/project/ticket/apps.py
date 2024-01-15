@@ -1,4 +1,4 @@
-from chameleon.common import ChameleonAppConfig
+from chameleon.common.django import ChameleonAppConfig
 
 
 class TicketConfig(ChameleonAppConfig):

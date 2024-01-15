@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from chameleon.common import ChameleonAppConfig
+from chameleon.common.django import ChameleonAppConfig
 from chameleon.step.validation import jsonschema
 
 

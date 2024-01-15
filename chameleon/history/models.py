@@ -1,6 +1,6 @@
 from django.db import models
 
-from chameleon.common.models import ChameleonBaseModel
+from chameleon.common.django.models import ChameleonBaseModel
 
 __all__ = ["ChameleonHistoryBase"]
 

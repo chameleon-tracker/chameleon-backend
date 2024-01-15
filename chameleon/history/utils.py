@@ -4,7 +4,7 @@ import datetime
 import typing
 from collections import abc
 
-from chameleon.common.models import ChameleonBaseModel
+from chameleon.common.django.models import ChameleonBaseModel
 from chameleon.history.models import ChameleonHistoryBase
 from chameleon.step.mapping.datetime import to_external_value
 from chameleon.step.mapping.simple import register_simple_mapping_from_object
