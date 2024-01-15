@@ -4,6 +4,7 @@ from django.urls import re_path
 from referencing.exceptions import Unresolvable
 
 from chameleon.project.project import api
+from chameleon.project.ticket import api as ticket_api
 from chameleon.step import core
 from chameleon.step.framework import steps_django as django
 from chameleon.step.steps.validation import ValidationError
@@ -67,6 +68,22 @@ processor_history = django.django_json_steps(
     business=api.project_history,
 )
 
+processor_ticket_create = django.django_json_steps(
+    type_id="ticket",
+    action_id_input="create",
+    action_id_output="get",
+    business=ticket_api.ticket_create_fun,
+    exception_handler={"validate_input": chameleon_validation_error_handler},
+)
+
+processor_ticket_list = django.django_json_steps(
+    type_id="ticket",
+    map_input=None,
+    action_id_output="get",
+    mapping_output_expect_list=True,
+    business=ticket_api.ticket_list_fun,
+)
+
 error_status_to_http = {1: 400}
 urlpatterns = (
     re_path(
@@ -89,6 +106,14 @@ urlpatterns = (
         "^/(?P<project_id>[a-zA-Z0-9_-]+)/history$",
         django.method_dispatcher(
             get=processor_history,
+            error_status_to_http=error_status_to_http,
+        ),
+    ),
+    re_path(
+        "^/(?P<project_id>[a-zA-Z0-9_-]+)/ticket$",
+        django.method_dispatcher(
+            get=processor_ticket_list,
+            post=processor_ticket_create,
             error_status_to_http=error_status_to_http,
         ),
     ),

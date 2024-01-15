@@ -15,8 +15,10 @@ async def ticket_history(context: core.StepContext):
 
 
 async def ticket_create_fun(context: core.StepContext):
-    ticket = context.input_business
+    ticket: ChameleonTicket = context.input_business
     now = datetime.utcnow()
+
+    ticket.creation_time = now
     async with transaction.aatomic():
         await ticket.insert()
 

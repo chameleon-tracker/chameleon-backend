@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(help_text="Ticket title", max_length=200)),
                 (
                     "creation_time",
-                    models.DateTimeField(help_text="When issue has been created"),
+                    models.DateTimeField(help_text="When ticket has been created"),
                 ),
                 (
                     "project",

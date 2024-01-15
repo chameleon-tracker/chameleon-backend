@@ -1,11 +1,7 @@
-import typing
 from collections import abc
 from itertools import chain
 
 from django.db import models
-
-from chameleon.common.query import AbstractModelQuery
-from chameleon.common.django.query import DjangoModelQuery
 
 
 class PrintableModel(models.Model):
@@ -53,7 +49,3 @@ class UpdatableModel(models.Model):
 class ChameleonBaseModel(PrintableModel, UpdatableModel):
     class Meta:
         abstract = True
-
-    objects = models.QuerySet.as_manager()
-
-    query: AbstractModelQuery[models.QuerySet, typing.Self] = DjangoModelQuery(objects)

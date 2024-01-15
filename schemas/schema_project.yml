@@ -36,11 +36,17 @@ $defs:
     properties:
       id:
         $ref: "schema_common.yml#/$defs/GenericPublicId"
+      creation_time:
+        type: string
+        description: |-
+          Chameleon ticket creation date and time
+        format: date-time
     allOf:
       - $ref: "#/$defs/ChameleonProjectCommon"
     required:
       - id
       - title
+      - creation_time
     unevaluatedProperties: false
 
   ChameleonProjectUpdate:
