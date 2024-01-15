@@ -17,8 +17,10 @@ async def project_history(context: core.StepContext):
 
 
 async def project_create_fun(context: core.StepContext):
-    project = context.input_business
+    project: ChameleonProject = context.input_business
     now = datetime.utcnow()
+
+    project.creation_time = now
     async with transaction.aatomic():
         await project.insert()
 
