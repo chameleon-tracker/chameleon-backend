@@ -4,7 +4,8 @@ from itertools import chain
 
 from django.db import models
 
-from chameleon.common.query import DjangoModelQuery, AbstractModelQuery
+from chameleon.common.query import AbstractModelQuery
+from chameleon.common.django.query import DjangoModelQuery
 
 
 class PrintableModel(models.Model):
