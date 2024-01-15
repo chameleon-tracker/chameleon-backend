@@ -1,0 +1,58 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "urn:chameleon:schema:ticket:0.0.1"
+
+$defs:
+  ChameleonTicketCommon:
+    type: object
+    description: |-
+      Common field definition for ChameleonTicket type between operations
+    properties:
+      title:
+        type: string
+        description: Ticket title
+        minLength: 1
+        maxLength: 200
+
+  ChameleonTicketCreate:
+    type: object
+    description: |-
+      Ticket definition to create a ChameleonTicket.
+    allOf:
+      - $ref: "#/$defs/ChameleonTicketCommon"
+    required:
+      - title
+    unevaluatedProperties: false
+
+  ChameleonTicket:
+    type: object
+    description: |-
+      ChameleonTicket with all public fields.
+    properties:
+      id:
+        $ref: "schema_common.yml#/$defs/GenericPublicId"
+      creation_time:
+        type: string
+        description: |-
+          Chameleon ticket creation date and time
+        format: date-time
+      project_id:
+        $ref: "schema_common.yml#/$defs/GenericPublicId"
+    allOf:
+      - $ref: "#/$defs/ChameleonTicketCommon"
+    required:
+      - id
+      - title
+      - creation_time
+      - project_id
+    unevaluatedProperties: false
+
+  ChameleonTicketUpdate:
+    type: object
+    description: |-
+      Field definition to update given ChameleonTicket
+    allOf:
+      - $ref: "#/$defs/ChameleonTicketCommon"
+    anyOf:
+      - required:
+          - title
+    unevaluatedProperties: false

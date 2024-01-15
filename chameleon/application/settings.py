@@ -29,6 +29,7 @@ DEBUG = True
 INSTALLED_APPS = [
     "chameleon.application.json",  # Schema and schema-based things
     "chameleon.project.project",
+    "chameleon.project.ticket",
     "chameleon.step.framework.django",
     "django.contrib.contenttypes",
 ]
