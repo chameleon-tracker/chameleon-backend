@@ -1,10 +1,10 @@
 from collections import abc
-import datetime
 import typing
 
 from chameleon.common import transaction
 from chameleon.project.project.models import ChameleonProject, ChameleonProjectHistory
 from chameleon.step import core
+from chameleon.step.mapping import datetime
 from chameleon.history.utils import generate_history_objects
 
 
@@ -18,7 +18,7 @@ async def project_history(context: core.StepContext):
 
 async def project_create_fun(context: core.StepContext):
     project = context.input_business
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.utcnow()
     async with transaction.aatomic():
         await project.insert()
 
@@ -45,7 +45,7 @@ async def project_get_fun(context: core.StepContext):
 async def project_update_fun(context: core.StepContext):
     project_id = context.custom_info["project_id"]
     project_data = context.input_business
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.utcnow()
     async with transaction.aatomic():
         project: ChameleonProject = await ChameleonProject.query.by_id(
             project_id
