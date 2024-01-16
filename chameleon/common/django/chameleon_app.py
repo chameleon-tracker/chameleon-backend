@@ -62,10 +62,10 @@ class ChameleonAppConfig(AppConfig):
         else:
             raise TypeError(f"label must be None, str or LabelProtocol, got {label!r}")
 
-        setattr(cls, "name", name)
-        setattr(cls, "default", default)
+        cls.name = name
+        cls.default = default
         if label_value is not None:
-            setattr(cls, "label", label_value)
+            cls.label = label_value
 
 
 # cleanup namespace
