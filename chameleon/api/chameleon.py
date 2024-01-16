@@ -1,11 +1,17 @@
 import logging
 
+import orjson
 from referencing.exceptions import Unresolvable
 
 from chameleon.step import core
+from chameleon.step.framework import steps_django as django
 from chameleon.step.steps.validation import ValidationError
 
 logger = logging.getLogger(__name__)
+
+__all__ = ["chameleon_json_steps", "method_dispatcher"]
+
+error_status_to_http = {1: 400}
 
 
 # TODO: create a Chameleon-wide default step and settings
@@ -22,3 +28,19 @@ async def chameleon_validation_error_handler(context: core.StepContext):
     }
 
     return True
+
+
+def chameleon_json_steps(**kwargs):
+    return django.django_json_steps(
+        json_loads=orjson.loads,
+        json_dumps=orjson.dumps,
+        exception_handler={"validate_input": chameleon_validation_error_handler},
+        **kwargs,
+    )
+
+
+def method_dispatcher(**kwargs):
+    return django.method_dispatcher(
+        error_status_to_http=error_status_to_http,
+        **kwargs,
+    )
