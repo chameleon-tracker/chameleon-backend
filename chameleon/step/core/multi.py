@@ -22,9 +22,9 @@ class StepSuffix(enum.Enum):
 
 
 STEP_SUFFIXES = (StepSuffix.PRE.value, StepSuffix.DEFAULT.value, StepSuffix.POST.value)
-allowed_steps: abc.Set[str] = set(
-    map(lambda field: field.name, dataclasses.fields(core.UrlHandlerSteps))
-)
+allowed_steps: abc.Set[str] = {
+    field.name for field in dataclasses.fields(core.UrlHandlerSteps)
+}
 
 
 class StepsDefinitionDict(typing.TypedDict, total=False):
@@ -164,23 +164,18 @@ def is_step_handler_multi(value):
     if isinstance(value, core.StepHandlerProtocol):
         return True
     if isinstance(value, abc.Mapping):
-        keys = all(map(lambda element: isinstance(element, str), value.keys()))
+        keys = all(isinstance(element, str) for element in value.keys())
 
         values = all(
-            map(
-                lambda element: isinstance(element, core.StepHandlerProtocol),
-                value.values(),
-            )
+            isinstance(element, core.StepHandlerProtocol) for element in value.values()
         )
 
-        keys_allowed = all(map(lambda element: element in allowed_steps, value.keys()))
+        keys_allowed = all(element in allowed_steps for element in value.keys())
 
         return keys and values and keys_allowed
 
     if isinstance(value, abc.Sequence):
-        return all(
-            map(lambda element: isinstance(element, core.StepHandlerProtocol), value)
-        )
+        return all(isinstance(element, core.StepHandlerProtocol) for element in value)
 
     raise ValueError(f"Unsupported type for value: {type(value)!r}")
 

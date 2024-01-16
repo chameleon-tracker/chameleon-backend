@@ -315,19 +315,16 @@ def files_in_modules(
             continue
 
         for root, _dirs, files in traverse_walk(traversable, root=module):
-            yield from map(
-                lambda file, directory=root, base=module: (
-                    base,
-                    f"{directory}/{file.name}",
-                    file,
-                ),
-                filter(lambda file: is_json_or_yaml(file.name), files),
+            yield from (
+                (module, f"{root}/{file.name}", file)
+                for file in files
+                if is_json_or_yaml(file.name)
             )
 
 
 def list_files_on_filesystem(
     paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
-):
+) -> abc.Iterator[tuple[str, str]]:
     """Lists all files from paths.
 
     If element is a file, return it.
@@ -351,12 +348,10 @@ def list_files_on_filesystem(
             continue
 
         for root, _dirs, files in os.walk(path):
-            yield from map(
-                lambda filename, directory=root, base=path: (
-                    base,
-                    f"{directory}/{filename}",
-                ),
-                filter(is_json_or_yaml, files),
+            yield from (
+                (path, f"{root}/{filename}")
+                for filename in files
+                if is_json_or_yaml(filename)
             )
 
 
