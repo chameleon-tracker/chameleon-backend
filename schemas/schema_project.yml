@@ -1,5 +1,6 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
-$id: "urn:chameleon:schema:project:0.0.1"
+---
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: urn:chameleon:schema:project:0.0.1
 
 $defs:
   ChameleonProjectCommon:
@@ -17,16 +18,16 @@ $defs:
         description: Project description
       description_markup:
         description: Project description markup language
-        $ref: "schema_common.yml#/$defs/GenericTextMarkup"
+        $ref: schema_common.yml#/$defs/GenericTextMarkup
 
   ChameleonProjectCreate:
     type: object
     description: |-
       Project definition to create a ChameleonProject.
     allOf:
-      - $ref: "#/$defs/ChameleonProjectCommon"
+    - $ref: '#/$defs/ChameleonProjectCommon'
     required:
-      - title
+    - title
     unevaluatedProperties: false
 
   ChameleonProject:
@@ -35,18 +36,18 @@ $defs:
       ChameleonProject with all public fields.
     properties:
       id:
-        $ref: "schema_common.yml#/$defs/GenericPublicId"
+        $ref: schema_common.yml#/$defs/GenericPublicId
       creation_time:
         type: string
         description: |-
           Chameleon ticket creation date and time
         format: date-time
     allOf:
-      - $ref: "#/$defs/ChameleonProjectCommon"
+    - $ref: '#/$defs/ChameleonProjectCommon'
     required:
-      - id
-      - title
-      - creation_time
+    - id
+    - title
+    - creation_time
     unevaluatedProperties: false
 
   ChameleonProjectUpdate:
@@ -54,11 +55,11 @@ $defs:
     description: |-
       Field definition to update given ChameleonProject
     allOf:
-      - $ref: "#/$defs/ChameleonProjectCommon"
+    - $ref: '#/$defs/ChameleonProjectCommon'
     anyOf:
-      - required:
-          - title
-      - required:
-          - description
-          - description_markup
+    - required:
+      - title
+    - required:
+      - description
+      - description_markup
     unevaluatedProperties: false
