@@ -1,9 +1,11 @@
 import functools
+import importlib.resources
 import logging
 import os.path
 import pathlib
 import typing
 from collections import abc
+from importlib.resources import abc as importlib_abc
 
 import jsonschema
 import referencing
@@ -76,14 +78,14 @@ def json_validation_processor(value: typing.Any, *, key: tuple[str, str | None])
 
 
 def load_schemas(
-    paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
+    paths_or_modules: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
     aliases: abc.Mapping[str, str] | None = None,
     schema_registry: SchemaRegistry = None,
 ):
     """Load schemas from given paths and apply aliases to them.
 
     Args:
-        paths: Paths to read schema files from.
+        paths_or_modules: Paths to read schema files from.
         aliases: Schema id aliases to use.
         schema_registry: Base registry to use to evolve.
     """
@@ -94,7 +96,7 @@ def load_schemas(
     known_schema_ids = set(schema_registry_work)  # it's iterable
 
     schema_registry_work = schema_registry_work.with_resources(
-        obtain_schema_data(paths, aliases or {}, known_schema_ids)
+        obtain_schema_data(paths_or_modules, aliases or {}, known_schema_ids)
     ).crawl()
 
     update_validators(schema_registry=schema_registry_work)
@@ -127,35 +129,42 @@ def guess_schema_registry(schema_registry: SchemaRegistry | None) -> SchemaRegis
 
 
 def obtain_schema_data(
-    paths: abc.Sequence[str | pathlib.Path],
+    paths_or_modules: abc.Sequence[str | pathlib.Path],
     aliases: abc.Mapping[str, str],
-    known_schema_ids: abc.Set[str],
+    known_schema_ids: abc.MutableSet[str],
 ) -> abc.Iterator[tuple[str, referencing.Resource]]:
     """Read and filter out schema files and return.
 
     Args:
-        paths: Paths to read schema files from.
+        paths_or_modules: Paths to read schema files from.
         aliases: Schema id aliases to use.
         known_schema_ids: Already known schema ids.
     """
-    for base, filename, schema_data in read_files(paths):
+
+    for base, filename, schema_data in read_schema_data(paths_or_modules):
         yield from process_schema(
             base, filename, schema_data, aliases, known_schema_ids
         )
 
 
-def read_files(
-    paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
+def read_schema_data(
+    paths_or_modules: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
 ) -> abc.Iterator[tuple[str | pathlib.Path, str, typing.Any]]:
-    """Read json and yaml files from given paths.
+    paths: abc.MutableSequence[str | pathlib.Path] = []
+    modules: abc.MutableSequence[str] = []
 
-    Args:
-        paths: Paths to read json and yaml files from
-    """
-    for base, filename in list_files(paths):
-        with open(filename, "rb") as f:
-            schema_data = yaml.safe_load(f.read())
-        yield base, filename, schema_data
+    if isinstance(paths_or_modules, (str, pathlib.Path)):
+        paths_or_modules = [paths_or_modules]
+
+    for item in paths_or_modules:
+        if isinstance(item, str) and item.startswith("module:"):
+            module = item[len("module:") :].strip()
+            modules.append(module)
+        else:
+            paths.append(item)
+
+    yield from read_files(paths)
+    yield from read_modules(modules)
 
 
 def process_schema(
@@ -221,9 +230,6 @@ def check_schema(filename: str | None, raw_data: typing.Any) -> bool:
         DefaultJsonMapping.check_schema(raw_data)
         return True
     except jsonschema.SchemaError as e:
-        # TODO: Should be there double logging for a single schema
-        #   if schema has both filename and schema_id?
-
         if filename:
             logger.warning(
                 "Schema from file %s: not a valid schema. Skipping",
@@ -258,10 +264,36 @@ def obtain_schema_ids(
         yield rel
         yield aliases.get(rel)
 
-    # TODO: It could be .pop() depending on how internals of SchemaRegistry work
     schema_id: str | None = str(schema_data.get("$id"))
     yield schema_id
     yield aliases.get(schema_id)
+
+
+def read_files(
+    paths: abc.Sequence[str | pathlib.Path],
+) -> abc.Iterator[tuple[str | pathlib.Path, str, typing.Any]]:
+    """Read json and yaml files from given paths.
+
+    Args:
+        paths: Paths to read json and yaml files from
+    """
+    for base, filename in list_files_on_filesystem(paths):
+        with open(filename, "rb") as f:
+            schema_data = yaml.safe_load(f.read())
+        yield base, filename, schema_data
+
+
+def read_modules(
+    modules: abc.Sequence[str],
+) -> abc.Iterator[tuple[str, str, typing.Any]]:
+    """Read json and yaml files from given modules.
+
+    Args:
+        modules: Paths to read json and yaml files from
+    """
+    for base, filename, traversable in files_in_modules(modules):
+        schema_data = yaml.safe_load(traversable.read_bytes())
+        yield base, filename, schema_data
 
 
 def is_json_or_yaml(filename: str):
@@ -273,7 +305,29 @@ def is_json_or_yaml(filename: str):
     return filename.endswith(JSON_EXTENSIONS)
 
 
-def list_files(paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path):
+def files_in_modules(
+    modules: abc.Sequence[str] | str,
+) -> abc.Iterator[tuple[str, importlib_abc.Traversable]]:
+    for module in modules:
+        traversable: importlib_abc.Traversable = importlib.resources.files(module)
+        if traversable.is_file() and is_json_or_yaml(traversable.name):
+            yield module, traversable
+            continue
+
+        for root, _dirs, files in traverse_walk(traversable, root=module):
+            yield from map(
+                lambda file, directory=root, base=module: (
+                    base,
+                    f"{directory}/{file.name}",
+                    file,
+                ),
+                filter(lambda file: is_json_or_yaml(file.name), files),
+            )
+
+
+def list_files_on_filesystem(
+    paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
+):
     """Lists all files from paths.
 
     If element is a file, return it.
@@ -304,3 +358,23 @@ def list_files(paths: abc.Sequence[str | pathlib.Path] | str | pathlib.Path):
                 ),
                 filter(is_json_or_yaml, files),
             )
+
+
+def traverse_walk(
+    traversable: importlib_abc.Traversable,
+    root: str = None,
+) -> abc.Iterator[
+    tuple[str, list[importlib_abc.Traversable], list[importlib_abc.Traversable]]
+]:
+    folders = []
+    files = []
+    for t in traversable.iterdir():
+        if t.is_dir():
+            folders.append(t)
+        else:
+            files.append(t)
+
+    yield root or "", folders, files
+
+    for folder in folders:
+        yield from traverse_walk(folder, root=f"{root}/{folder}")
