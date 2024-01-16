@@ -100,17 +100,17 @@ def multi_dict_step(
 def list_step(
     steps: abc.Sequence[core.StepHandlerProtocol | None],
 ) -> core.StepHandlerProtocol | None:
-    steps = tuple(filter(lambda step: step is not None, steps))
+    filtered_steps = tuple(filter(lambda step: step is not None, steps))
 
-    if not steps:
+    if not filtered_steps:
         return None
 
-    if len(steps) == 1:
-        return steps[0]
+    if len(filtered_steps) == 1:
+        return filtered_steps[0]
 
     async def list_handler(context: ctx.StepContext):
         result = False
-        for step in steps:  # pylint disable: consider-using-any-or-all
+        for step in filtered_steps:  # pylint disable: consider-using-any-or-all
             result = await step(context) or result
         return result
 

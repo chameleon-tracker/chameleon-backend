@@ -156,7 +156,9 @@ class UrlHandler:
         self.exception_handler = steps.exception_handler or default_exception_handler
         self.response_steps = tuple(defined_steps(steps.response_order()))
 
-    async def __call__(self, request: typing.Any, **url_params: str) -> typing.Any:
+    async def __call__(
+        self, request: typing.Any, **url_params: typing.Any
+    ) -> typing.Any:
         context: ctx.StepContext = ctx.StepContext(
             request_info=ctx.StepContextRequestInfo(request=request),
             custom_info=url_params,

@@ -1,11 +1,12 @@
-from collections import abc
 import typing
+from collections import abc
 
 from chameleon.common.django import transaction
-from chameleon.project.project.models import ChameleonProject, ChameleonProjectHistory
+from chameleon.history.utils import generate_history_objects
+from chameleon.project.project.models import ChameleonProject
+from chameleon.project.project.models import ChameleonProjectHistory
 from chameleon.step import core
 from chameleon.step.mapping import datetime
-from chameleon.history.utils import generate_history_objects
 
 
 async def project_history(context: core.StepContext):

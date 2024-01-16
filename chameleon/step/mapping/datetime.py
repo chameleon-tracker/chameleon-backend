@@ -11,9 +11,9 @@ def to_external_value(value: datetime.datetime) -> str:
 
 
 def as_utc(value: datetime.datetime) -> datetime.datetime:
-    return value.astimezone(datetime.timezone.utc)
+    return value.astimezone(datetime.UTC)
 
 
 def utcnow() -> datetime.datetime:
     """Returns now with UTC timezone."""
-    return datetime.datetime.now(datetime.timezone.utc)
+    return datetime.datetime.now(datetime.UTC)

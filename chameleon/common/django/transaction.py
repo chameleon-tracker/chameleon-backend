@@ -1,5 +1,5 @@
-from django.db.transaction import Atomic
 from asgiref.sync import sync_to_async
+from django.db.transaction import Atomic
 
 
 class AsyncAtomicContextManager(Atomic):
