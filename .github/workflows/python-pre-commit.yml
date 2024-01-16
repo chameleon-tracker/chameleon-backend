@@ -1,0 +1,49 @@
+name: python pre-commit checks
+
+on:
+  push:
+    paths:
+      - '.github/workflows/python-pre-commit.yml'
+      - '.pre-commit-config.yaml'
+      - 'setup.py'
+      - 'setup.cfg'
+      - tox.ini
+      - chameleon
+      - schemas
+      - tests
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '.github/workflows/python-pre-commit.yml'
+      - '.pre-commit-config.yaml'
+      - 'setup.py'
+      - 'setup.cfg'
+      - tox.ini
+      - chameleon
+      - schemas
+      - tests
+  workflow_dispatch:
+
+jobs:
+  python-pre-commit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.12' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: '**/setup.cfg'
+      - name: Install dependencies
+        run:
+          pip install -U pip setuptools wheel
+          pip install tox tox-gh-actions
+      - name: Test with tox
+        run:
+          tox -e pre-commit
