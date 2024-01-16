@@ -1,5 +1,6 @@
 import logging
 
+import orjson
 from referencing.exceptions import Unresolvable
 
 from chameleon.step import core
@@ -31,6 +32,8 @@ async def chameleon_validation_error_handler(context: core.StepContext):
 
 def chameleon_json_steps(**kwargs):
     return django.django_json_steps(
+        json_loads=orjson.loads,
+        json_dumps=orjson.dumps,
         exception_handler={"validate_input": chameleon_validation_error_handler},
         **kwargs,
     )

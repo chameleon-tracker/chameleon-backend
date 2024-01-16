@@ -6,17 +6,17 @@ from collections import abc
 
 from chameleon.common.django.models import ChameleonBaseModel
 from chameleon.history.models import ChameleonHistoryBase
-from chameleon.step.mapping.datetime import to_external_value
-from chameleon.step.mapping.simple import register_simple_mapping_from_object
+from chameleon.step.mapping import datetime as datetime_utils
+from chameleon.step.mapping import simple as mapping
 
 
 def register_mapping_history_output(*, type_id: str, action_id: str | None):
-    register_simple_mapping_from_object(
+    mapping.register_simple_mapping_from_object(
         type_id=type_id,
         action_id=action_id,
         target_object_type=dict,
         fields=("timestamp", "action", "field", "value_from", "value_to"),
-        custom_converters={"timestamp": to_external_value},
+        custom_converters={"timestamp": datetime_utils.as_utc},
     )
 
 
