@@ -8,13 +8,21 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import importlib.util
+import os.path
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
-DATABASE_DIR = BASE_DIR.parent.parent
-SCHEMAS_PATHS = BASE_DIR.parent.parent / "schemas"
+DATABASE_DIR = Path(os.path.curdir).absolute()
+
+if importlib.util.find_spec("chameleon.schemas"):
+    SCHEMAS_PATHS_OR_MODULES = "module:chameleon.schemas"
+else:
+    # Dangerous hack to allow dev installation
+    local_schemas = Path(os.path.curdir).absolute() / "schemas"
+    SCHEMAS_PATHS_OR_MODULES = local_schemas
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
