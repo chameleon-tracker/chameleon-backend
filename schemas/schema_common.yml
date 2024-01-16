@@ -1,20 +1,21 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
-$id: "urn:chameleon:schema:common:0.0.1"
+---
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: urn:chameleon:schema:common:0.0.1
 
 $defs:
   GenericTextMarkup:
     type: string
     description: Markup types definition.
     enum:
-      - PLAIN
-      - MARKDOWN
-      - ASCIIDOC
+    - PLAIN
+    - MARKDOWN
+    - ASCIIDOC
 
   GenericPublicId:
     type: string
     description: |-
       Public ID must contain only base64 urlsafe characters
-    pattern: '^[a-zA-Z0-9_-]+$'
+    pattern: ^[a-zA-Z0-9_-]+$
 
   ObjectHistory:
     type: object
@@ -37,5 +38,5 @@ $defs:
         type: string
         description: new value if set
     required:
-      - timestamp
-      - action
+    - timestamp
+    - action

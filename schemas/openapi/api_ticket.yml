@@ -1,3 +1,4 @@
+---
 openapi: 3.0.0
 info:
   title: Ticket Object API
@@ -7,19 +8,19 @@ paths:
     get:
       description: Retrieve given ticket
       parameters:
-        - name: ticketId
-          in: path
-          description: public ID of ticket to return info
-          required: true
-          schema:
-            $ref: "schema_common.yml#/$defs/GenericPublicId"
+      - name: ticketId
+        in: path
+        description: public ID of ticket to return info
+        required: true
+        schema:
+          $ref: schema_common.yml#/$defs/GenericPublicId
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: 'schema_ticket.yml#/$defs/ChameleonTicket'
+                $ref: schema_ticket.yml#/$defs/ChameleonTicket
         '400':
           description: Invalid input
         '404':
@@ -27,17 +28,17 @@ paths:
     post:
       description: ''
       parameters:
-        - name: ticketId
-          in: path
-          description: public ID of ticket that needs to be updated
-          required: true
-          schema:
-            $ref: "schema_common.yml#/$defs/GenericPublicId"
+      - name: ticketId
+        in: path
+        description: public ID of ticket that needs to be updated
+        required: true
+        schema:
+          $ref: schema_common.yml#/$defs/GenericPublicId
       requestBody:
         content:
           application/json:
             schema:
-              $ref: 'schema_ticket.yml#/$defs/ChameleonTicketUpdate'
+              $ref: schema_ticket.yml#/$defs/ChameleonTicketUpdate
       responses:
         '204':
           description: Successful operation
@@ -49,12 +50,12 @@ paths:
     get:
       description: Retrieve change history for ticket
       parameters:
-        - name: ticketId
-          in: path
-          description: public ID of ticket to return history for
-          required: true
-          schema:
-            $ref: "schema_common.yml#/$defs/GenericPublicId"
+      - name: ticketId
+        in: path
+        description: public ID of ticket to return history for
+        required: true
+        schema:
+          $ref: schema_common.yml#/$defs/GenericPublicId
       responses:
         '200':
           description: successful operation
@@ -63,7 +64,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'schema_common.yml#/$defs/ObjectHistory'
+                  $ref: schema_common.yml#/$defs/ObjectHistory
         '400':
           description: Invalid input
         '404':

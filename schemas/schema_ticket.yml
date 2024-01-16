@@ -1,5 +1,6 @@
-$schema: "https://json-schema.org/draft/2020-12/schema"
-$id: "urn:chameleon:schema:ticket:0.0.1"
+---
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: urn:chameleon:schema:ticket:0.0.1
 
 $defs:
   ChameleonTicketCommon:
@@ -18,9 +19,9 @@ $defs:
     description: |-
       Ticket definition to create a ChameleonTicket.
     allOf:
-      - $ref: "#/$defs/ChameleonTicketCommon"
+    - $ref: '#/$defs/ChameleonTicketCommon'
     required:
-      - title
+    - title
     unevaluatedProperties: false
 
   ChameleonTicket:
@@ -29,21 +30,21 @@ $defs:
       ChameleonTicket with all public fields.
     properties:
       id:
-        $ref: "schema_common.yml#/$defs/GenericPublicId"
+        $ref: schema_common.yml#/$defs/GenericPublicId
       creation_time:
         type: string
         description: |-
           Chameleon ticket creation date and time
         format: date-time
       project_id:
-        $ref: "schema_common.yml#/$defs/GenericPublicId"
+        $ref: schema_common.yml#/$defs/GenericPublicId
     allOf:
-      - $ref: "#/$defs/ChameleonTicketCommon"
+    - $ref: '#/$defs/ChameleonTicketCommon'
     required:
-      - id
-      - title
-      - creation_time
-      - project_id
+    - id
+    - title
+    - creation_time
+    - project_id
     unevaluatedProperties: false
 
   ChameleonTicketUpdate:
@@ -51,8 +52,8 @@ $defs:
     description: |-
       Field definition to update given ChameleonTicket
     allOf:
-      - $ref: "#/$defs/ChameleonTicketCommon"
+    - $ref: '#/$defs/ChameleonTicketCommon'
     anyOf:
-      - required:
-          - title
+    - required:
+      - title
     unevaluatedProperties: false
