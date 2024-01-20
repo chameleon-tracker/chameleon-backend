@@ -17,6 +17,9 @@ async def ticket_history(context: core.StepContext):
 
 async def ticket_create_fun(context: core.StepContext):
     ticket: ChameleonTicket = context.input_business
+    project_id = context.custom_info["project_id"]
+    ticket.project_id = project_id
+
     now = datetime.utcnow()
 
     ticket.creation_time = now
@@ -35,7 +38,10 @@ async def ticket_create_fun(context: core.StepContext):
 
 
 async def ticket_list_fun(context: core.StepContext):
-    context.output_business = await ChameleonTicket.query.all()
+    project_id = context.custom_info["project_id"]
+    context.output_business = await ChameleonTicket.query.by_project_id(
+        project_id
+    ).all()
 
 
 async def ticket_get_fun(context: core.StepContext):
