@@ -28,40 +28,74 @@ allowed_steps: abc.Set[str] = {
 
 
 class StepsDefinitionDict(typing.TypedDict, total=False):
-    fill_request_info: StepHandlerMulti | None
-    fill_request_info_default: StepHandlerMulti | None
-    check_authenticated: StepHandlerMulti | None
-    check_authenticated_default: StepHandlerMulti | None
-    check_headers: StepHandlerMulti | None
-    check_headers_default: StepHandlerMulti | None
-    check_access_pre_read: StepHandlerMulti | None
-    check_access_pre_read_default: StepHandlerMulti | None
-    extract_body: StepHandlerMulti | None
-    extract_body_default: StepHandlerMulti | None
-    decrypt: StepHandlerMulti | None
-    decrypt_default: StepHandlerMulti | None
-    deserialize: StepHandlerMulti | None
-    deserialize_default: StepHandlerMulti | None
-    validate_input: StepHandlerMulti | None
-    validate_input_default: StepHandlerMulti | None
-    check_access_post_read: StepHandlerMulti | None
-    check_access_post_read_default: StepHandlerMulti | None
-    map_input: StepHandlerMulti | None
-    map_input_default: StepHandlerMulti | None
-    business: StepHandlerMulti | None
-    business_default: StepHandlerMulti | None
-    map_output: StepHandlerMulti | None
-    map_output_default: StepHandlerMulti | None
-    exception_handler: StepHandlerMulti | None
-    exception_handler_default: StepHandlerMulti | None
-    serialize: StepHandlerMulti | None
-    serialize_default: StepHandlerMulti | None
-    encrypt: StepHandlerMulti | None
-    encrypt_default: StepHandlerMulti | None
-    response_headers: StepHandlerMulti | None
-    response_headers_default: StepHandlerMulti | None
-    create_response: StepHandlerMulti | None
-    create_response_default: StepHandlerMulti | None
+    fill_request_info_pre: StepHandlerMulti | None = None
+    fill_request_info: StepHandlerMulti | None = None
+    fill_request_info_default: StepHandlerMulti | None = None
+    fill_request_info_post: StepHandlerMulti | None = None
+    check_authenticated_pre: StepHandlerMulti | None = None
+    check_authenticated: StepHandlerMulti | None = None
+    check_authenticated_default: StepHandlerMulti | None = None
+    check_authenticated_post: StepHandlerMulti | None = None
+    check_headers_pre: StepHandlerMulti | None = None
+    check_headers: StepHandlerMulti | None = None
+    check_headers_default: StepHandlerMulti | None = None
+    check_headers_post: StepHandlerMulti | None = None
+    check_access_pre_read_pre: StepHandlerMulti | None = None
+    check_access_pre_read: StepHandlerMulti | None = None
+    check_access_pre_read_default: StepHandlerMulti | None = None
+    check_access_pre_read_post: StepHandlerMulti | None = None
+    extract_body_pre: StepHandlerMulti | None = None
+    extract_body: StepHandlerMulti | None = None
+    extract_body_default: StepHandlerMulti | None = None
+    extract_body_post: StepHandlerMulti | None = None
+    decrypt_pre: StepHandlerMulti | None = None
+    decrypt: StepHandlerMulti | None = None
+    decrypt_default: StepHandlerMulti | None = None
+    decrypt_post: StepHandlerMulti | None = None
+    deserialize_pre: StepHandlerMulti | None = None
+    deserialize: StepHandlerMulti | None = None
+    deserialize_default: StepHandlerMulti | None = None
+    deserialize_post: StepHandlerMulti | None = None
+    validate_input_pre: StepHandlerMulti | None = None
+    validate_input: StepHandlerMulti | None = None
+    validate_input_default: StepHandlerMulti | None = None
+    validate_input_post: StepHandlerMulti | None = None
+    check_access_post_read_pre: StepHandlerMulti | None = None
+    check_access_post_read: StepHandlerMulti | None = None
+    check_access_post_read_default: StepHandlerMulti | None = None
+    check_access_post_read_post: StepHandlerMulti | None = None
+    map_input_pre: StepHandlerMulti | None = None
+    map_input: StepHandlerMulti | None = None
+    map_input_default: StepHandlerMulti | None = None
+    map_input_post: StepHandlerMulti | None = None
+    business_pre: StepHandlerMulti | None = None
+    business: StepHandlerMulti | None = None
+    business_default: StepHandlerMulti | None = None
+    business_post: StepHandlerMulti | None = None
+    map_output_pre: StepHandlerMulti | None = None
+    map_output: StepHandlerMulti | None = None
+    map_output_default: StepHandlerMulti | None = None
+    map_output_post: StepHandlerMulti | None = None
+    exception_handler_pre: StepHandlerMulti | None = None
+    exception_handler: StepHandlerMulti | None = None
+    exception_handler_default: StepHandlerMulti | None = None
+    exception_handler_post: StepHandlerMulti | None = None
+    serialize_pre: StepHandlerMulti | None = None
+    serialize: StepHandlerMulti | None = None
+    serialize_default: StepHandlerMulti | None = None
+    serialize_post: StepHandlerMulti | None = None
+    encrypt_pre: StepHandlerMulti | None = None
+    encrypt: StepHandlerMulti | None = None
+    encrypt_default: StepHandlerMulti | None = None
+    encrypt_post: StepHandlerMulti | None = None
+    response_headers_pre: StepHandlerMulti | None = None
+    response_headers: StepHandlerMulti | None = None
+    response_headers_default: StepHandlerMulti | None = None
+    response_headers_post: StepHandlerMulti | None = None
+    create_response_pre: StepHandlerMulti | None = None
+    create_response: StepHandlerMulti | None = None
+    create_response_default: StepHandlerMulti | None = None
+    create_response_post: StepHandlerMulti | None = None
 
 
 T = typing.TypeVar("T")
