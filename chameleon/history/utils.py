@@ -6,18 +6,6 @@ from collections import abc
 
 from chameleon.common.django.models import ChameleonBaseModel
 from chameleon.history.models import ChameleonHistoryBase
-from chameleon.step.mapping import datetime as datetime_utils
-from chameleon.step.mapping import simple as mapping
-
-
-def register_mapping_history_output(*, type_id: str, action_id: str | None):
-    mapping.register_simple_mapping_from_object(
-        type_id=type_id,
-        action_id=action_id,
-        target_object_type=dict,
-        fields=("timestamp", "action", "field", "value_from", "value_to"),
-        custom_converters={"timestamp": datetime_utils.as_utc},
-    )
 
 
 def generate_history_objects[T: ChameleonBaseModel, F: ChameleonHistoryBase](
@@ -28,12 +16,12 @@ def generate_history_objects[T: ChameleonBaseModel, F: ChameleonHistoryBase](
     action: str,
     timestamp: datetime.datetime,
     pk_field: str = "id",
-) -> abc.Sequence[F]:
+) -> abc.Iterator[F]:
     if source_object is None and target_object is None:
         raise ValueError("source and target objects are both None")
 
-    source_value = object_values(source_object)
-    target_value = object_values(target_object)
+    source_value: abc.Mapping[str, typing.Any] = object_values(source_object)
+    target_value: abc.Mapping[str, typing.Any] = object_values(target_object)
 
     source_id = source_value.get(pk_field)
     target_id = target_value.get(pk_field)
@@ -44,7 +32,7 @@ def generate_history_objects[T: ChameleonBaseModel, F: ChameleonHistoryBase](
     if source_id is not None and target_id is not None and source_id != target_id:
         raise ValueError("source and target objects has different primary keys")
 
-    if target_id is None:  # Delete
+    if target_id is None:  # Delete, source id is not None
         yield history_model(
             object_id=source_id,
             timestamp=timestamp,
@@ -83,7 +71,7 @@ def generate_history_objects[T: ChameleonBaseModel, F: ChameleonHistoryBase](
 
 def object_values[T: ChameleonBaseModel](
     source: abc.Mapping[str, typing.Any] | T,
-) -> abc.Mapping[str, typing.Any] | None:
+) -> abc.Mapping[str, typing.Any]:
     if source is None:
         return {}
     if isinstance(source, ChameleonBaseModel):
@@ -94,7 +82,7 @@ def object_values[T: ChameleonBaseModel](
 def object_difference(
     source: abc.Mapping[str, typing.Any],
     target: abc.Mapping[str, typing.Any],
-) -> abc.Sequence[tuple[str, tuple[str | None, str | None]]]:
+) -> abc.Iterable[tuple[str, tuple[str | None, str | None]]]:
     source_keys = frozenset(source.keys())
     target_keys = frozenset(target.keys())
 

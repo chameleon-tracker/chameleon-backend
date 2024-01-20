@@ -10,11 +10,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import importlib.util
 import os.path
+from collections import abc
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_DIR = Path(os.path.curdir).absolute()
+
+SCHEMAS_PATHS_OR_MODULES: abc.Sequence[str | Path] | str | Path
 
 if importlib.util.find_spec("chameleon.schemas"):
     SCHEMAS_PATHS_OR_MODULES = "module:chameleon.schemas"

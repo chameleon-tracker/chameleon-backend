@@ -1,3 +1,4 @@
+import datetime
 import typing
 from collections import abc
 
@@ -6,7 +7,7 @@ from chameleon.history.utils import generate_history_objects
 from chameleon.project.ticket.models import ChameleonTicket
 from chameleon.project.ticket.models import ChameleonTicketHistory
 from chameleon.step import core
-from chameleon.step.mapping import datetime
+from chameleon.step.mapping.datetime import utcnow
 
 
 async def ticket_history(context: core.StepContext):
@@ -20,7 +21,7 @@ async def ticket_create_fun(context: core.StepContext):
     project_id = context.custom_info["project_id"]
     ticket.project_id = project_id
 
-    now = datetime.utcnow()
+    now = utcnow()
 
     ticket.creation_time = now
     async with transaction.aatomic():
@@ -52,7 +53,7 @@ async def ticket_get_fun(context: core.StepContext):
 async def ticket_update_fun(context: core.StepContext):
     ticket_id = context.custom_info["ticket_id"]
     ticket_data = context.input_business
-    now = datetime.utcnow()
+    now = utcnow()
     async with transaction.aatomic():
         ticket: ChameleonTicket = await ChameleonTicket.query.by_id(ticket_id).first()
         source = ticket.to_dict()
