@@ -6,7 +6,7 @@ from django.db import models
 from chameleon.common.query import AbstractModelQuery
 
 
-class DjangoModelQuery[ModelType](AbstractModelQuery[models.QuerySet, ModelType]):
+class DjangoModelQuery[ModelType](AbstractModelQuery[models.Manager, ModelType]):
     async def first(self):
         return await self.query.aget()
 
