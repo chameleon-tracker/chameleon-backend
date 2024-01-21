@@ -5,18 +5,31 @@ import typing
 from collections import abc
 
 from chameleon.common.django.models import ChameleonBaseModel
-from chameleon.history.models import ChameleonHistoryBase
 
 
-def generate_history_objects[T: ChameleonBaseModel, F: ChameleonHistoryBase](
+class ChameleonHistoryModelProtocol(typing.Protocol):
+    def __call__(
+        self,
+        *,
+        object_id: int,
+        timestamp: datetime.datetime,
+        action: str | None,
+        field: str | None,
+        value_from: str | None,
+        value_to: str | None,
+    ) -> ChameleonBaseModel:
+        raise NotImplementedError()
+
+
+def generate_history_objects[T: ChameleonBaseModel](
     *,
     source_object: abc.Mapping[str, typing.Any] | T | None,
     target_object: abc.Mapping[str, typing.Any] | T | None,
-    history_model: type[F],
+    history_model: ChameleonHistoryModelProtocol,
     action: str,
     timestamp: datetime.datetime,
     pk_field: str = "id",
-) -> abc.Iterator[F]:
+) -> abc.Iterator[ChameleonBaseModel]:
     if source_object is None and target_object is None:
         raise ValueError("source and target objects are both None")
 

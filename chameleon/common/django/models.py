@@ -1,7 +1,10 @@
+import typing
 from collections import abc
 from itertools import chain
 
 from django.db import models
+
+from chameleon.common.query import AbstractModelQuery
 
 
 class PrintableModel(models.Model):
@@ -34,10 +37,7 @@ class UpdatableModel(models.Model):
 
     def set_fields(self, **kwargs):
         for key, value in kwargs.items():
-            if isinstance(getattr(self, key), models.Field):
-                setattr(self, key, value)
-            else:
-                raise KeyError(f"Unable to update field {key} as it's not a field")
+            setattr(self, key, value)
 
     async def update(self, keys: abc.Sequence[str] | None = None):
         await self.asave(update_fields=keys, force_update=True)
@@ -49,3 +49,5 @@ class UpdatableModel(models.Model):
 class ChameleonBaseModel(PrintableModel, UpdatableModel):
     class Meta:
         abstract = True
+
+    query: typing.ClassVar[AbstractModelQuery[models.QuerySet, typing.Self]]

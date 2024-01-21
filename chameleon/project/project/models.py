@@ -1,17 +1,23 @@
 from django.db import models
 
 from chameleon.common.django.fields import markup_field
-from chameleon.common.django.models import ChameleonBaseModel
 from chameleon.common.django.query import DjangoModelQuery
 from chameleon.history.models import ChameleonHistoryBase
+from chameleon.history.models import ChameleonObjectWithHistoryBase
 
 __all__ = ["ChameleonProject", "ChameleonProjectHistory"]
 
 
-class ChameleonProject(ChameleonBaseModel):
+class ChameleonProjectHistory(ChameleonHistoryBase):
+    objects = models.QuerySet.as_manager()
+    query = DjangoModelQuery(objects)
+
+
+class ChameleonProject(ChameleonObjectWithHistoryBase):
     class Meta:
         ordering = ["creation_time"]
 
+    history_class = ChameleonProjectHistory
     objects = models.QuerySet.as_manager()
     query = DjangoModelQuery(objects)
 
@@ -21,8 +27,3 @@ class ChameleonProject(ChameleonBaseModel):
 
     # ---- creation only -----
     creation_time = models.DateTimeField(help_text="When project has been created")
-
-
-class ChameleonProjectHistory(ChameleonHistoryBase):
-    objects = models.QuerySet.as_manager()
-    query = DjangoModelQuery(objects)

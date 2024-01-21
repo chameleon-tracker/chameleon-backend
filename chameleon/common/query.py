@@ -21,7 +21,7 @@ class AbstractQuery[QueryType, ModelType]:
     async def __aiter__(self):
         raise NotImplementedError("Not implemented")
 
-    async def bulk_create(self, objects: abc.Sequence[ModelType]):
+    async def bulk_create(self, objects: abc.Iterable[ModelType]):
         raise NotImplementedError("Not implemented")
 
 
