@@ -25,5 +25,8 @@ class DjangoModelQuery[ModelType](AbstractModelQuery[models.Manager, ModelType])
     def by_project_id(self, project_id) -> typing.Self:
         return DjangoModelQuery(self.query.filter(project_id=project_id))
 
+    def by_ticket_id(self, ticket_id) -> typing.Self:
+        return DjangoModelQuery(self.query.filter(ticket_id=ticket_id))
+
     def by_object_id(self, object_id) -> typing.Self:
         return DjangoModelQuery(self.query.filter(object_id=object_id))

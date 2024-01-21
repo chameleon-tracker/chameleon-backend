@@ -1,0 +1,71 @@
+---
+openapi: 3.0.0
+info:
+  title: Comment Object API
+  version: 0.0.1
+paths:
+  /api/comment/{commentId}:
+    get:
+      description: Retrieve given comment
+      parameters:
+      - name: commentId
+        in: path
+        description: public ID of comment to return info
+        required: true
+        schema:
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: ../schema_comment.yml#/$defs/ChameleonComment
+        '400':
+          description: Invalid input
+        '404':
+          description: Object not found
+    post:
+      description: ''
+      parameters:
+      - name: commentId
+        in: path
+        description: public ID of comment that needs to be updated
+        required: true
+        schema:
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ../schema_comment.yml#/$defs/ChameleonCommentUpdate
+      responses:
+        '204':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '404':
+          description: Comment not found
+  /api/comment/{commentId}/history:
+    get:
+      description: Retrieve change history for comment
+      parameters:
+      - name: commentId
+        in: path
+        description: public ID of comment to return history for
+        required: true
+        schema:
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: ../schema_common.yml#/$defs/ObjectHistory
+        '400':
+          description: Invalid input
+        '404':
+          description: Object not found
