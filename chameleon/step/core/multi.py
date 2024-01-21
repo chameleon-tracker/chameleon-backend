@@ -134,7 +134,8 @@ def multi_dict_step(
 def list_step(
     steps: abc.Sequence[core.StepHandlerProtocol | None],
 ) -> core.StepHandlerProtocol | None:
-    filtered_steps = tuple(filter(lambda step: step is not None, steps))
+    filtered_steps: tuple[core.StepHandlerProtocol, ...]
+    filtered_steps = tuple(step for step in steps if step is not None)
 
     if not filtered_steps:
         return None
@@ -216,19 +217,25 @@ def is_step_handler_multi(value):
 
 def split_steps(
     *,
-    defined_steps: abc.MutableMapping[str, StepHandlerMulti | None],
+    defined_steps: StepsDefinitionDict,
     base_steps: abc.MutableMapping[str, StepHandlerMulti | None],
     default_steps: abc.MutableMapping[str, StepHandlerMulti | None],
     pre_steps: abc.MutableMapping[str, StepHandlerMulti | None],
     post_steps: abc.MutableMapping[str, StepHandlerMulti | None],
 ):
+    steps: abc.Mapping[str, abc.MutableMapping[str, StepHandlerMulti | None]]
+
     steps = {
-        None: base_steps,
+        "": base_steps,
         StepSuffix.DEFAULT.value: default_steps,
         StepSuffix.PRE.value: pre_steps,
         StepSuffix.POST.value: post_steps,
     }
-    for name, step in defined_steps.items():
+
+    name: str
+    step: StepHandlerMulti | None
+
+    for name, step in defined_steps.items():  # type: ignore[assignment]
         if step is None:
             continue
 
@@ -236,14 +243,14 @@ def split_steps(
             raise TypeError(
                 f"Step handler for `{name}` doesn't implement StepHandlerMulti or None"
             )
-
+        suffix: str
         if name.endswith(STEP_SUFFIXES):
             step_name, suffix = name.rsplit("_", 1)
             if suffix not in STEP_SUFFIXES:
                 raise KeyError(f"Step suffix `{suffix}` is not allowed")
         else:
             step_name = name
-            suffix = None
+            suffix = ""
 
         if step_name not in allowed_steps:
             raise KeyError(f"Step `{step_name}` is not allowed")

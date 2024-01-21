@@ -38,6 +38,8 @@ class ChameleonAppConfig(AppConfig):
     class Meta:
         abstract = True
 
+    default: bool
+
     def __init_subclass__(
         cls,
         /,

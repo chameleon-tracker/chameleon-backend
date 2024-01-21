@@ -13,7 +13,7 @@ class DjangoModelQuery[ModelType](AbstractModelQuery[models.QuerySet, ModelType]
     def __aiter__(self):
         return aiter(self.query.all())
 
-    async def bulk_create(self, objects: abc.Sequence[ModelType]):
+    async def bulk_create(self, objects: abc.Iterable[ModelType]):
         await self.query.abulk_create(objects)
 
     def by_id(self, pk) -> typing.Self:

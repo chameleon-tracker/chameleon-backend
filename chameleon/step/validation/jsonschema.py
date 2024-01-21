@@ -32,7 +32,7 @@ def register_jsonschema_validation(
     ref: str,
     type_id: str,
     action_id: str | None = None,
-    schema_registry: SchemaRegistry = None,
+    schema_registry: SchemaRegistry | None = None,
 ):
     key = (type_id, action_id)
 
@@ -57,7 +57,7 @@ def create_validator(
     ref: str,
     type_id: str,
     action_id: str | None = None,
-    schema_registry: SchemaRegistry = None,
+    schema_registry: SchemaRegistry | None = None,
 ):
     """Create JSON Schema Validator for given reference and cache it."""
 
@@ -80,7 +80,7 @@ def json_validation_processor(value: typing.Any, *, key: tuple[str, str | None])
 def load_schemas(
     paths_or_modules: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
     aliases: abc.Mapping[str, str] | None = None,
-    schema_registry: SchemaRegistry = None,
+    schema_registry: SchemaRegistry | None = None,
 ):
     """Load schemas from given paths and apply aliases to them.
 
@@ -129,7 +129,7 @@ def guess_schema_registry(schema_registry: SchemaRegistry | None) -> SchemaRegis
 
 
 def obtain_schema_data(
-    paths_or_modules: abc.Sequence[str | pathlib.Path],
+    paths_or_modules: abc.Sequence[str | pathlib.Path] | str | pathlib.Path,
     aliases: abc.Mapping[str, str],
     known_schema_ids: abc.MutableSet[str],
 ) -> abc.Iterator[tuple[str, referencing.Resource]]:
@@ -264,9 +264,11 @@ def obtain_schema_ids(
         yield rel
         yield aliases.get(rel)
 
-    schema_id: str | None = str(schema_data.get("$id"))
-    yield schema_id
-    yield aliases.get(schema_id)
+    schema_id: typing.Any = schema_data.get("$id")
+    if schema_id:
+        schema_id_str: str = str(schema_id)
+        yield schema_id_str
+        yield aliases.get(schema_id_str)
 
 
 def read_files(
@@ -307,11 +309,11 @@ def is_json_or_yaml(filename: str):
 
 def files_in_modules(
     modules: abc.Sequence[str] | str,
-) -> abc.Iterator[tuple[str, importlib_abc.Traversable]]:
+) -> abc.Iterator[tuple[str, str, importlib_abc.Traversable]]:
     for module in modules:
         traversable: importlib_abc.Traversable = importlib.resources.files(module)
         if traversable.is_file() and is_json_or_yaml(traversable.name):
-            yield module, traversable
+            yield module, traversable.name, traversable
             continue
 
         for root, _dirs, files in traverse_walk(traversable, root=module):
@@ -343,13 +345,15 @@ def list_files_on_filesystem(
         if not os.path.exists(path):
             raise ValueError(f"Path {path!r} doesn't exists")
 
+        path_str = str(path)
+
         if os.path.isfile(path) and is_json_or_yaml(str(path)):
-            yield os.path.dirname(path), path
+            yield os.path.dirname(path), path_str
             continue
 
         for root, _dirs, files in os.walk(path):
             yield from (
-                (path, f"{root}/{filename}")
+                (path_str, f"{root}/{filename}")
                 for filename in files
                 if is_json_or_yaml(filename)
             )
@@ -357,7 +361,7 @@ def list_files_on_filesystem(
 
 def traverse_walk(
     traversable: importlib_abc.Traversable,
-    root: str = None,
+    root: str | None = None,
 ) -> abc.Iterator[
     tuple[str, list[importlib_abc.Traversable], list[importlib_abc.Traversable]]
 ]:

@@ -23,57 +23,59 @@ class UrlHandlerProcessSteps:
     # framework-specific
     fill_request_info: StepHandlerProtocol | None = create_field(
         doc="""Extracts basic request info to minimize dependency from framework."""
-    )
+    )  # type: ignore[assignment]
 
     # framework-specific
     check_authenticated: StepHandlerProtocol | None = create_field(
         doc="""Check if a user authenticated e.g. auth token is valid."""
-    )
+    )  # type: ignore[assignment]
 
     # framework-specific
     check_headers: StepHandlerProtocol | None = create_field(
         doc="""Check request headers are expected."""
-    )
+    )  # type: ignore[assignment]
     check_access_pre_read: StepHandlerProtocol | None = create_field(
         doc="""Check a requester has an access to that resource"
          "(body hasn't been read)."""
-    )
+    )  # type: ignore[assignment]
 
     # framework-specific
     extract_body: StepHandlerProtocol | None = create_field(
         doc="""Extract body from the request layer."""
-    )
+    )  # type: ignore[assignment]
 
     decrypt: StepHandlerProtocol | None = create_field(
         doc="""Optional decryption and/or signature check of the request_body."""
-    )
+    )  # type: ignore[assignment]
 
     # could be generated from default impl
     deserialize: StepHandlerProtocol | None = create_field(
         doc="""Deserialize request body to the input_raw."""
-    )
+    )  # type: ignore[assignment]
+
     # could be generated from default impl
     validate_input: StepHandlerProtocol | None = create_field(
         doc="""Validate input_raw and/or request body."""
-    )
+    )  # type: ignore[assignment]
 
     check_access_post_read: StepHandlerProtocol | None = create_field(
         doc="""Check a requester has an access to that resource (body has been read)."""
-    )
+    )  # type: ignore[assignment]
 
     # could be generated from default impl
     map_input: StepHandlerProtocol | None = create_field(
         doc="""Map input_raw to the internal representation to be processed."""
-    )
+    )  # type: ignore[assignment]
 
     business: StepHandlerProtocol | None = create_field(
         doc="""Endpoint business part. Could be database handling and/or"""
         """sending another request somewhere else"""
-    )
+    )  # type: ignore[assignment]
+
     # could be generated from default impl
     map_output: StepHandlerProtocol | None = create_field(
         doc="""Map output_business to the raw representation to be serialized."""
-    )
+    )  # type: ignore[assignment]
 
     def process_order(self):
         """Intended execution order."""
@@ -97,23 +99,24 @@ class UrlHandlerProcessSteps:
 class UrlHandlerSteps(UrlHandlerProcessSteps):
     exception_handler: StepHandlerProtocol | None = create_field(
         doc="""Handle an exception."""
-    )
+    )  # type: ignore[assignment]
 
     serialize: StepHandlerProtocol | None = create_field(
         doc="""Serialize output_raw to be passed for transport layers."""
-    )
+    )  # type: ignore[assignment]
+
     encrypt: StepHandlerProtocol | None = create_field(
         doc="""Optional encryption, signing, etc."""
-    )
+    )  # type: ignore[assignment]
 
     response_headers: StepHandlerProtocol | None = create_field(
         doc="""Prepare additional response headers."""
-    )
+    )  # type: ignore[assignment]
 
     # framework-specific
     create_response: StepHandlerProtocol | None = create_field(
         doc="""Create HTTP response to be returned."""
-    )
+    )  # type: ignore[assignment]
 
     def response_order(self):
         """Intended response preparation order."""
@@ -128,7 +131,7 @@ class UrlHandlerSteps(UrlHandlerProcessSteps):
 def defined_steps(
     steps: abc.Sequence[tuple[str, StepHandlerProtocol | None]],
 ) -> abc.Iterable[tuple[str, StepHandlerProtocol]]:
-    return filter(lambda step: step[1] is not None, steps)
+    return (step for step in steps if step[1] is not None)  # type: ignore[misc]
 
 
 async def default_exception_handler(context: ctx.StepContext):
