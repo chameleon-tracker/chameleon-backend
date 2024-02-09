@@ -13,14 +13,14 @@ paths:
         description: public ID of ticket to return info
         required: true
         schema:
-          $ref: schema_common.yml#/$defs/GenericPublicId
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: schema_ticket.yml#/$defs/ChameleonTicket
+                $ref: ../schema_ticket.yml#/$defs/ChameleonTicket
         '400':
           description: Invalid input
         '404':
@@ -33,12 +33,12 @@ paths:
         description: public ID of ticket that needs to be updated
         required: true
         schema:
-          $ref: schema_common.yml#/$defs/GenericPublicId
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
       requestBody:
         content:
           application/json:
             schema:
-              $ref: schema_ticket.yml#/$defs/ChameleonTicketUpdate
+              $ref: ../schema_ticket.yml#/$defs/ChameleonTicketUpdate
       responses:
         '204':
           description: Successful operation
@@ -55,7 +55,7 @@ paths:
         description: public ID of ticket to return history for
         required: true
         schema:
-          $ref: schema_common.yml#/$defs/GenericPublicId
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
       responses:
         '200':
           description: successful operation
@@ -64,8 +64,35 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: schema_common.yml#/$defs/ObjectHistory
+                  $ref: ../schema_common.yml#/$defs/ObjectHistory
         '400':
           description: Invalid input
         '404':
           description: Object not found
+  /api/project/{projectId}/ticket:
+    get:
+      description: List available projects
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: ../schema_comment.yml#/$defs/ChameleonComment
+    post:
+      description: Create new project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ../schema_comment.yml#/$defs/ChameleonCommentCreate
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: ../schema_comment.yml#/$defs/ChameleonComment

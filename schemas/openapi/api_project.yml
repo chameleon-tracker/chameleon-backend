@@ -15,14 +15,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: schema_project.yml#/$defs/ChameleonProject
+                  $ref: ../schema_project.yml#/$defs/ChameleonProject
     post:
       description: Create new project
       requestBody:
         content:
           application/json:
             schema:
-              $ref: schema_project.yml#/$defs/ChameleonProjectCreate
+              $ref: ../schema_project.yml#/$defs/ChameleonProjectCreate
         required: true
       responses:
         '200':
@@ -30,7 +30,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: schema_project.yml#/$defs/ChameleonProject
+                $ref: ../schema_project.yml#/$defs/ChameleonProject
   /api/project/{projectId}:
     get:
       description: Retrieve given project
@@ -40,14 +40,14 @@ paths:
         description: ID of project to return
         required: true
         schema:
-          $ref: schema_common.yml#/$defs/GenericPublicId
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: schema_project.yml#/$defs/ChameleonProject
+                $ref: ../schema_project.yml#/$defs/ChameleonProject
         '400':
           description: Invalid input
         '404':
@@ -60,12 +60,12 @@ paths:
         description: ID of project that needs to be updated
         required: true
         schema:
-          $ref: schema_common.yml#/$defs/GenericPublicId
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
       requestBody:
         content:
           application/json:
             schema:
-              $ref: schema_project.yml#/$defs/ChameleonProjectUpdate
+              $ref: ../schema_project.yml#/$defs/ChameleonProjectUpdate
       responses:
         '204':
           description: Successful operation
@@ -82,7 +82,7 @@ paths:
         description: ID of project to return
         required: true
         schema:
-          $ref: schema_common.yml#/$defs/GenericPublicId
+          $ref: ../schema_common.yml#/$defs/GenericPublicId
       responses:
         '200':
           description: successful operation
@@ -91,7 +91,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: schema_common.yml#/$defs/ObjectHistory
+                  $ref: ../schema_common.yml#/$defs/ObjectHistory
         '400':
           description: Invalid input
         '404':
@@ -107,14 +107,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: schema_ticket.yml#/$defs/ChameleonTicket
+                  $ref: ../schema_ticket.yml#/$defs/ChameleonTicket
     post:
       description: Create new project
       requestBody:
         content:
           application/json:
             schema:
-              $ref: schema_ticket.yml#/$defs/ChameleonTicketCreate
+              $ref: ../schema_ticket.yml#/$defs/ChameleonTicketCreate
         required: true
       responses:
         '200':
@@ -122,4 +122,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: schema_ticket.yml#/$defs/ChameleonTicket
+                $ref: ../schema_ticket.yml#/$defs/ChameleonTicket

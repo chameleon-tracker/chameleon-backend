@@ -39,3 +39,6 @@ class AbstractModelQuery[QueryType, ModelType](AbstractQuery[QueryType, ModelTyp
 
     def by_object_id(self, object_id) -> typing.Self:
         raise NotImplementedError("Not implemented")
+
+    def by_ticket_id(self, ticket_id) -> typing.Self:
+        raise NotImplementedError("Not implemented")

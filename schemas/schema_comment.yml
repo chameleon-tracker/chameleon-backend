@@ -1,18 +1,13 @@
 ---
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: urn:chameleon:schema:project:0.0.2
+$id: urn:chameleon:schema:comment:0.0.1
 
 $defs:
-  ChameleonProjectCommon:
+  ChameleonCommentCommon:
     type: object
     description: |-
-      Common field definition for ChameleonProject type between operations
+      Common field definition for ChameleonComment type between operations
     properties:
-      title:
-        type: string
-        description: Project title
-        minLength: 1
-        maxLength: 200
       description:
         type: string
         description: Project description
@@ -20,51 +15,49 @@ $defs:
         description: Project description markup language
         $ref: schema_common.yml#/$defs/GenericTextMarkup
 
-  ChameleonProjectCreate:
+  ChameleonCommentCreate:
     type: object
     description: |-
-      Project definition to create a ChameleonProject.
+      Comment definition to create a ChameleonComment.
     allOf:
-    - $ref: '#/$defs/ChameleonProjectCommon'
+    - $ref: '#/$defs/ChameleonCommentCommon'
     required:
-    - title
+    - description
+    - description_markup
     unevaluatedProperties: false
 
-  ChameleonProject:
+  ChameleonComment:
     type: object
     description: |-
-      ChameleonProject with all public fields.
+      ChameleonComment with all public fields.
     properties:
       id:
         $ref: schema_common.yml#/$defs/GenericPublicId
       creation_time:
         type: string
         description: |-
-          Chameleon ticket creation date and time
+          Chameleon comment creation date and time
         format: date-time
+      project_id:
+        $ref: schema_common.yml#/$defs/GenericPublicId
     allOf:
-    - $ref: '#/$defs/ChameleonProjectCommon'
+    - $ref: '#/$defs/ChameleonCommentCommon'
     required:
     - id
-    - title
+    - description
+    - description_markup
     - creation_time
+    - ticket_id
     unevaluatedProperties: false
 
-  ChameleonProjectUpdate:
+  ChameleonCommentUpdate:
     type: object
     description: |-
-      Field definition to update given ChameleonProject
+      Field definition to update given ChameleonComment
     allOf:
-    - $ref: '#/$defs/ChameleonProjectCommon'
+    - $ref: '#/$defs/ChameleonCommentCommon'
     anyOf:
-    - required:
-      - title
     - required:
       - description
       - description_markup
-    dependentSchemas:
-      description:
-        required: [description_markup]
-      description_markup:
-        required: [description]
     unevaluatedProperties: false
