@@ -40,6 +40,6 @@ jobs:
         cache: pip
         cache-dependency-path: '**/setup.cfg'
     - name: Install dependencies
-      run: pip install -U pip setuptools wheel pip install tox tox-gh-actions
+      run: pip install -U pip setuptools wheel tox tox-gh-actions
     - name: Test with tox
       run: tox -e unit-test
