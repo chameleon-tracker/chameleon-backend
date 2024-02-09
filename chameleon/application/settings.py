@@ -19,6 +19,8 @@ DATABASE_DIR = Path(os.path.curdir).absolute()
 
 SCHEMAS_PATHS_OR_MODULES: abc.Sequence[str | Path] | str | Path
 
+ALLOWED_HOSTS = ["*"]
+
 if importlib.util.find_spec("chameleon.schemas"):
     SCHEMAS_PATHS_OR_MODULES = "module:chameleon.schemas"
 else:
@@ -81,21 +83,29 @@ LOGGING = {
             "()": "django.utils.log.RequireDebugTrue",
         }
     },
+    "formatters": {
+        "verbose": {
+            "format": "[django] %(levelname)s %(asctime)s %(module)s"
+            " %(process)d %(thread)d %(message)s"
+        }
+    },
     "handlers": {
         "console": {
             "level": "DEBUG",
             "filters": ["require_debug_true"],
             "class": "logging.StreamHandler",
+            "formatter": "verbose",
         }
     },
     "loggers": {
-        "django.db.backends": {
+        "django": {
             "level": "DEBUG",
-            "handlers": ["console"],
-        }
+            "propagate": True,
+        },
     },
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+        "propagate": True,
     },
 }
