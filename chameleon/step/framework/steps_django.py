@@ -3,7 +3,6 @@ import typing
 from collections import abc
 
 from django import http
-from django.core.exceptions import ObjectDoesNotExist
 
 from chameleon.step import core
 from chameleon.step.steps import steps_default as default
@@ -90,29 +89,8 @@ class DjangoParams(core.StepsDefinitionDict, default.DefaultJsonSteps):
 
 
 def django_json_steps(
-    exception_handler_map: abc.Mapping[str, core.StepHandlerProtocol] | None = None,
     **kwargs: typing.Unpack[DjangoParams],
 ) -> core.StepsDefinitionDict:
-    exception_handler = kwargs.get("exception_handler_default")
-
-    if exception_handler is not None and exception_handler_map is not None:
-        raise ValueError(
-            'Set both "exception_handler_default" and'
-            ' "exception_handler_map" is not allowed'
-        )
-
-    if exception_handler is None:
-        exception_handler = exception_handler_map
-        if exception_handler is None:
-            exception_handler = {}
-
-        if (
-            isinstance(exception_handler, abc.MutableMapping)
-            and "business" not in exception_handler
-        ):
-            exception_handler["business"] = generic_business_error_handler
-        kwargs["exception_handler_default"] = exception_handler
-
     default_json_kwargs = default.default_json_steps(**kwargs)
 
     default_json_kwargs.update(
@@ -128,15 +106,3 @@ def django_json_steps(
     )
 
     return default_json_kwargs
-
-
-async def generic_business_error_handler(context: core.StepContext) -> bool:
-    if isinstance(context.exception, ObjectDoesNotExist):
-        context.error_status = 404
-
-        if context.output_raw is None:
-            context.output_raw = {"error": 404, "reason": "object doesn't exist"}
-
-            return True
-
-    return False
