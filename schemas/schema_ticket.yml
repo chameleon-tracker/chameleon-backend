@@ -1,6 +1,6 @@
 ---
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: urn:chameleon:schema:ticket:0.0.1
+$id: urn:chameleon:schema:ticket:0.0.2
 
 $defs:
   ChameleonTicketCommon:
