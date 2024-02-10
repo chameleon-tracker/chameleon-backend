@@ -26,9 +26,9 @@ processing_step_order = (
     "map_input",
     "business",
     "map_output",
+    "serialize",
 )
 response_step_order = (
-    "serialize",
     "encrypt",
     "response_headers",
     "create_response",

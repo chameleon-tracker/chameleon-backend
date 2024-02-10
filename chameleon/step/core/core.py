@@ -77,6 +77,10 @@ class UrlHandlerProcessSteps:
         doc="""Map output_business to the raw representation to be serialized."""
     )  # type: ignore[assignment]
 
+    serialize: StepHandlerProtocol | None = create_field(
+        doc="""Serialize output_raw to be passed for transport layers."""
+    )  # type: ignore[assignment]
+
     def process_order(self):
         """Intended execution order."""
         return (
@@ -92,6 +96,7 @@ class UrlHandlerProcessSteps:
             ("map_input", self.map_input),
             ("business", self.business),
             ("map_output", self.map_output),
+            ("serialize", self.serialize),
         )
 
 
@@ -101,8 +106,14 @@ class UrlHandlerSteps(UrlHandlerProcessSteps):
         doc="""Handle an exception."""
     )  # type: ignore[assignment]
 
-    serialize: StepHandlerProtocol | None = create_field(
-        doc="""Serialize output_raw to be passed for transport layers."""
+    error_serialize: StepHandlerProtocol | None = create_field(
+        doc="""Serialize to be passed for transport layers
+        if exception occur during serialization."""
+    )  # type: ignore[assignment]
+
+    fault_message: StepHandlerProtocol | None = create_field(
+        doc="""Fault message to be returned
+        if final_serialize resulted in an exception."""
     )  # type: ignore[assignment]
 
     encrypt: StepHandlerProtocol | None = create_field(
@@ -121,7 +132,8 @@ class UrlHandlerSteps(UrlHandlerProcessSteps):
     def response_order(self):
         """Intended response preparation order."""
         return (
-            ("serialize", self.serialize),
+            ("error_serialize", self.error_serialize),
+            ("fault_message", self.fault_message),
             ("encrypt", self.encrypt),
             ("response_headers", self.response_headers),
             ("create_response", self.create_response),
@@ -168,6 +180,10 @@ class UrlHandler:
             error_status_to_http=self.error_status_to_http,
         )
 
+        # TODO:
+        #  * log exception
+        #  * handle and serialize last bit.
+        #  * If failed, return JSON parseable minimal output
         try:
             await call_steps(context, self.process_steps)
         except Exception as e:  # pylint: disable=W0718
@@ -177,3 +193,11 @@ class UrlHandler:
 
         await call_steps(context, self.response_steps)
         return context.response
+
+    async def call_steps_with_serialize(self, context: ctx.StepContext):
+        try:
+            await call_steps(context, self.process_steps)
+        except Exception as e:  # pylint: disable=W0718
+            context.exception = e
+            if not await self.exception_handler(context):
+                raise  # re-raise the exception if not handled
