@@ -1,6 +1,6 @@
 ---
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: urn:chameleon:schema:project:0.0.2
+$id: urn:chameleon:schema:project:0.0.3
 
 $defs:
   ChameleonProjectCommon:
@@ -8,6 +8,11 @@ $defs:
     description: |-
       Common field definition for ChameleonProject type between operations
     properties:
+      name:
+        type: string
+        description: Project name
+        minLength: 1
+        maxLength: 50
       title:
         type: string
         description: Project title
@@ -27,6 +32,7 @@ $defs:
     allOf:
     - $ref: '#/$defs/ChameleonProjectCommon'
     required:
+    - name
     - title
     unevaluatedProperties: false
 
@@ -46,6 +52,7 @@ $defs:
     - $ref: '#/$defs/ChameleonProjectCommon'
     required:
     - id
+    - name
     - title
     - creation_time
     unevaluatedProperties: false
@@ -57,6 +64,8 @@ $defs:
     allOf:
     - $ref: '#/$defs/ChameleonProjectCommon'
     anyOf:
+    - required:
+      - name
     - required:
       - title
     - required:

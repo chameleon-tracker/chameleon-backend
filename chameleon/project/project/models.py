@@ -21,6 +21,7 @@ class ChameleonProject(ChameleonObjectWithHistoryBase):
     objects = models.QuerySet.as_manager()
     query = DjangoModelQuery(objects)
 
+    name = models.CharField(max_length=50, help_text="Project name")
     title = models.CharField(max_length=200, help_text="Project title")
     description = models.TextField(null=True, help_text="Project description")
     description_markup = markup_field("Project description")
