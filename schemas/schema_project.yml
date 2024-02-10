@@ -3,10 +3,11 @@ $schema: https://json-schema.org/draft/2020-12/schema
 $id: urn:chameleon:schema:project:0.0.3
 
 $defs:
-  ChameleonProjectCommon:
+
+  ChameleonProjectHead:
     type: object
     description: |-
-      Common field definition for ChameleonProject type between operations
+      Base field definition for ChameleonProject type between operations
     properties:
       name:
         type: string
@@ -18,12 +19,20 @@ $defs:
         description: Project title
         minLength: 1
         maxLength: 200
+
+  ChameleonProjectCommon:
+    type: object
+    description: |-
+      Common field definition for ChameleonProject type between operations
+    properties:
       description:
         type: string
         description: Project description
       description_markup:
         description: Project description markup language
         $ref: schema_common.yml#/$defs/GenericTextMarkup
+    allOf:
+    - $ref: '#/$defs/ChameleonProjectHead'
 
   ChameleonProjectCreate:
     type: object
@@ -34,6 +43,8 @@ $defs:
     required:
     - name
     - title
+    - description
+    - description_markup
     unevaluatedProperties: false
 
   ChameleonProject:
@@ -50,6 +61,29 @@ $defs:
         format: date-time
     allOf:
     - $ref: '#/$defs/ChameleonProjectCommon'
+    required:
+    - id
+    - name
+    - title
+    - description
+    - description_markup
+    - creation_time
+    unevaluatedProperties: false
+
+  ChameleonProjectList:
+    type: object
+    description: |-
+      ChameleonProject with minimal public fields to present list operation.
+    properties:
+      id:
+        $ref: schema_common.yml#/$defs/GenericPublicId
+      creation_time:
+        type: string
+        description: |-
+          Chameleon ticket creation date and time
+        format: date-time
+    allOf:
+    - $ref: '#/$defs/ChameleonProjectHead'
     required:
     - id
     - name

@@ -15,7 +15,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: ../schema_project.yml#/$defs/ChameleonProject
+                  $ref: ../schema_project.yml#/$defs/ChameleonProjectList
     post:
       description: Create new project
       requestBody:
