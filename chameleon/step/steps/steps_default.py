@@ -50,7 +50,7 @@ def default_json_steps(
         json_dumps: Function to serialize JSON in runtime
         type_id: Object type ID
         action_id_input: Mapping/Validation action ID for given object for input
-        action_id_output: Mapping action ID for given object for input
+        action_id_output: Mapping action ID for given object for output
         mapping_input_expect_list: Map input as a list to reuse mappers
         mapping_output_expect_list: Map output as a list to reuse mappers
         mapping_check_runtime: If mapping load functions in runtime
