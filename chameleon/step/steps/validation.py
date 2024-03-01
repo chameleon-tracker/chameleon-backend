@@ -6,12 +6,10 @@ from chameleon.step import validation
 __all__ = ("default_validation_steps", "ValidationError")
 
 
-def noop_validator(value: typing.Any):
-    ...
+def noop_validator(value: typing.Any): ...
 
 
-class ValidationError(ValueError):
-    ...
+class ValidationError(ValueError): ...
 
 
 def generic_validation_step(

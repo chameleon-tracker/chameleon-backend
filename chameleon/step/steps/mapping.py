@@ -81,8 +81,7 @@ async def mapper_handler_list_output(
 class MapperHandlerProtocol(typing.Protocol):
     async def __call__(
         self, context: core.StepContext, *, mapping_function: core.ProcessorProtocol
-    ):
-        ...
+    ): ...
 
 
 # (is_input, expect_list) -> handler
