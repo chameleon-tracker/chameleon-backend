@@ -7,8 +7,7 @@ __all__ = ["ChameleonAppConfig"]
 
 @typing.runtime_checkable
 class LabelProtocol(typing.Protocol):
-    def __call__(self, name: str) -> str | None:
-        ...
+    def __call__(self, name: str) -> str | None: ...
 
 
 def chameleon_label(name: str) -> str | None:

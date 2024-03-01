@@ -14,8 +14,7 @@ __all__ = [
 
 @typing.runtime_checkable
 class StepHandlerProtocol(typing.Protocol):
-    async def __call__(self, context: ctx.StepContext) -> bool | None:
-        ...
+    async def __call__(self, context: ctx.StepContext) -> bool | None: ...
 
 
 @dataclasses.dataclass(slots=True, frozen=True, kw_only=True)

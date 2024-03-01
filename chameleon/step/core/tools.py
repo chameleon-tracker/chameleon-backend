@@ -8,8 +8,7 @@ __all__ = ("method_dispatcher",)
 
 
 class InvalidHandlerProtocol(typing.Protocol):
-    async def __call__(self, *args, **kwargs):
-        ...
+    async def __call__(self, *args, **kwargs): ...
 
 
 def method_dispatcher(

@@ -9,8 +9,7 @@ __all__ = ("ProcessorRegistry", "ProcessorProtocol")
 
 @typing.runtime_checkable
 class ProcessorProtocol(typing.Protocol):
-    def __call__(self, value: typing.Any) -> typing.Any:
-        ...
+    def __call__(self, value: typing.Any) -> typing.Any: ...
 
 
 class ProcessorRegistry:
