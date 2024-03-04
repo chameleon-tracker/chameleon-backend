@@ -69,9 +69,9 @@ paths:
           description: Invalid input
         '404':
           description: Object not found
-  /api/project/{projectId}/ticket:
+  /api/ticket/{ticketId}/comment:
     get:
-      description: List available projects
+      description: List available comments for given ticket
       responses:
         '200':
           description: Successful operation
@@ -82,7 +82,7 @@ paths:
                 items:
                   $ref: ../schema_comment.yml#/$defs/ChameleonComment
     post:
-      description: Create new project
+      description: Create new comment
       requestBody:
         content:
           application/json:
