@@ -98,7 +98,7 @@ paths:
           description: Object not found
   /api/project/{projectId}/ticket:
     get:
-      description: List available projects
+      description: List available tickets
       responses:
         '200':
           description: Successful operation
@@ -109,7 +109,7 @@ paths:
                 items:
                   $ref: ../schema_ticket.yml#/$defs/ChameleonTicket
     post:
-      description: Create new project
+      description: Create new ticket
       requestBody:
         content:
           application/json:
