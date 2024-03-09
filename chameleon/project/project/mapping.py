@@ -7,7 +7,7 @@ mapping.register_simple_mapping_from_dict(
     type_id="project",
     action_id="create",
     target_object_type=ChameleonProject,
-    fields=("name", "title", "description", "description_markup"),
+    fields=("name", "summary", "description", "description_markup"),
 )
 
 mapping.register_simple_mapping_from_object(
@@ -17,7 +17,7 @@ mapping.register_simple_mapping_from_object(
     fields=(
         "id",
         "name",
-        "title",
+        "summary",
         "creation_time",
         "description",
         "description_markup",
@@ -29,14 +29,14 @@ mapping.register_simple_mapping_from_object(
     type_id="project",
     action_id="list",
     target_object_type=dict,
-    fields=("id", "name", "title", "creation_time"),
+    fields=("id", "name", "summary", "creation_time"),
 )
 
 mapping.register_simple_mapping_from_dict(
     type_id="project",
     action_id="update",
     target_object_type=dict,
-    fields=("name", "title", "description", "description_markup"),
+    fields=("name", "summary", "description", "description_markup"),
 )
 
 history.register_mapping_history_output(type_id="project", action_id="history")

@@ -22,7 +22,7 @@ class ChameleonProject(ChameleonObjectWithHistoryBase):
     query = DjangoModelQuery(objects)
 
     name = models.CharField(max_length=50, help_text="Project name")
-    title = models.CharField(max_length=200, help_text="Project title")
+    summary = models.CharField(max_length=200, help_text="Project summary")
     description = models.TextField(null=True, help_text="Project description")
     description_markup = markup_field("Project description")
 
