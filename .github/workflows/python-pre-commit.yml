@@ -3,27 +3,9 @@ name: python pre-commit checks
 
 on:
   push:
-    paths:
-    - .github/workflows/python-pre-commit.yml
-    - .pre-commit-config.yaml
-    - setup.py
-    - setup.cfg
-    - tox.ini
-    - chameleon
-    - schemas
-    - tests
     branches:
     - main
   pull_request:
-    paths:
-    - .github/workflows/python-pre-commit.yml
-    - .pre-commit-config.yaml
-    - setup.py
-    - setup.cfg
-    - tox.ini
-    - chameleon
-    - schemas
-    - tests
   workflow_dispatch:
 
 jobs:
