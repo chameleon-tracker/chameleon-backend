@@ -3,7 +3,6 @@ $schema: https://json-schema.org/draft/2020-12/schema
 $id: urn:chameleon:schema:project:0.0.3
 
 $defs:
-
   ChameleonProjectHead:
     type: object
     description: |-
@@ -14,9 +13,9 @@ $defs:
         description: Project name
         minLength: 1
         maxLength: 50
-      title:
+      summary:
         type: string
-        description: Project title
+        description: Project summary
         minLength: 1
         maxLength: 200
 
@@ -42,7 +41,7 @@ $defs:
     - $ref: '#/$defs/ChameleonProjectCommon'
     required:
     - name
-    - title
+    - summary
     - description
     - description_markup
     unevaluatedProperties: false
@@ -64,7 +63,7 @@ $defs:
     required:
     - id
     - name
-    - title
+    - summary
     - description
     - description_markup
     - creation_time
@@ -87,7 +86,7 @@ $defs:
     required:
     - id
     - name
-    - title
+    - summary
     - creation_time
     unevaluatedProperties: false
 
@@ -101,7 +100,7 @@ $defs:
     - required:
       - name
     - required:
-      - title
+      - summary
     - required:
       - description
       - description_markup
