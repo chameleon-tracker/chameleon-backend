@@ -15,7 +15,7 @@ mapping.register_simple_mapping_from_object(
     action_id="get",
     target_object_type=dict,
     fields=("id", "title", "creation_time", "project_id"),
-    custom_converters={"creation_time": datetime.as_utc},
+    custom_converters={"creation_time": datetime.as_utc, "id": str, "project_id": str},
 )
 
 mapping.register_simple_mapping_from_object(
@@ -23,6 +23,7 @@ mapping.register_simple_mapping_from_object(
     action_id="list",
     target_object_type=dict,
     fields=("id", "title", "creation_time", "project_id"),
+    custom_converters={"creation_time": datetime.as_utc, "id": str, "project_id": str},
 )
 
 mapping.register_simple_mapping_from_dict(
