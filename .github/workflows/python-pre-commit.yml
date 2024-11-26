@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.12']
+        python-version: ['3.13']
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -24,6 +24,8 @@ jobs:
         cache: pip
         cache-dependency-path: '**/setup.cfg'
     - name: Install dependencies
-      run: pip install -U pip setuptools wheel tox tox-gh-actions
-    - name: Test with tox
-      run: tox -e pre-commit
+      run: |
+        pip install -U pip setuptools wheel
+        pip install -r .github/requirements.txt
+    - name: Pre-commit
+      run: pre-commit run --all-files --show-diff-on-failure
